@@ -15,6 +15,11 @@ machine-learning pipelines.
 
 Typical use cases include:
 
+- Producing high-resolution ground-ice content maps across Alaska
+  with quantified uncertainty via a physics-constrained generative
+  model. SPADE automates the permafrost surface-subsurface data
+  assembly that feeds the model and the deep-learning fusion of
+  sparse in-situ observations with remote sensing.
 - Setting up site or regional simulations for models like ELM, ATS,
   ELM-FATES, and ELM-MOSART by assembling atmospheric forcing,
   surface datasets, and observations.
