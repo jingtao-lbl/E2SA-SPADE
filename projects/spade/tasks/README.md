@@ -79,17 +79,6 @@ Minimum viable: site name, lat/lon, time period, list of variables, source prefe
 
 For a worked example, see [`20260521-doe-ecrp-fy26-event-catalog/`](20260521-doe-ecrp-fy26-event-catalog/). That task covers all four work types (forcing, surface dataset, observations, QC) across 26 Alaska extreme-event windows and is the canonical citable source for the 26-event catalog.
 
-## Public visibility
-
-The SPADE repository is moving toward public release. When a task is filed here, assume the task file may become publicly visible. Treat the task file as a citable artifact:
-
-- Use real, verifiable references (DOI, peer-reviewed source URL, or government / institutional gray-literature URL). Avoid TBD-VERIFY-style placeholders in published task content; mark unresolved citations explicitly as "preliminary citation pending verification" and name the candidate sources.
-- Avoid internal jargon that would not generalize to an external reader. Use full names on first occurrence (for example, "Active Layer Thickness" before abbreviating to ALT, "Mean Annual Ground Temperature" before MAGT).
-- Do not include unpublished collaborator or program-officer correspondence unless that material is already public.
-- Apply the global no-em-dashes rule throughout. Use commas, periods, or parentheses instead.
-- "Climate" is allowed in task text if it appears in cited paper titles. For task body prose, prefer "weather and environmental extremes," "Earth system," or "land-atmosphere exchange" if there is a downstream proposal-narrative constraint to respect.
-
-The worked example above demonstrates this style (real citations with DOIs, preliminary-citation tags where peer-reviewed sources are pending, public-facing context that a citing reader can follow without internal docs).
 
 ## Relationship to other E2SA pieces
 
