@@ -1,0 +1,72 @@
+# Secrets
+.env
+.env.local
+*.key
+
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+build/
+dist/
+
+# Environments
+.venv/
+venv/
+env/
+e2sa_env/
+
+# Data downloads (users provide their own; data is gitignored at all depths)
+data/raw/
+data/interim/
+data/processed/
+**/data/raw/
+**/data/interim/
+**/data/processed/
+data/lance/
+data/*.duckdb
+data/*.duckdb-wal
+*.nc
+*.nc4
+*.h5
+*.hdf
+*.tif
+*.tiff
+*.grib
+*.grib2
+*.shp
+*.shx
+*.dbf
+*.prj
+*.gpkg
+*.parquet
+
+# Vector store snapshots
+*.lance/
+.lance/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log

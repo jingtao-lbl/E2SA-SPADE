@@ -1,0 +1,72 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "identifier": "e2sa-spade",
+  "name": "SPADE: Subsurface Permafrost Autonomous Discovery Engine",
+  "description": "SPADE is an agentic data-preparation and model-simulation-setup agent for coupled surface-subsurface Earth system workflows. SPADE assembles permafrost observations and forcing datasets from CALM, UAF GIPL, GTN-P, the Alaska Permafrost Thaw Database (Webb et al. 2026), CUSP, NASA ABoVE, NGEE-Arctic, and additional Arctic data portals; harmonizes them into a unified pydantic schema with DuckDB provenance; supports site and regional simulation setup for ELM, ATS, ELM-FATES, ELM-MOSART, and related models; and includes a literature-review agent built on Semantic Scholar and paper-search-mcp. The initial source-document catalog focuses on Alaska and the pan-Arctic; SPADE's adapter library, schema, and provenance catalog are designed to transfer to other regions and other coupled surface-subsurface prediction systems.",
+  "version": "0.1.0",
+  "license": "https://spdx.org/licenses/BSD-3-Clause",
+  "codeRepository": "https://github.com/jingtao-lbl/E2SA-SPADE",
+  "programmingLanguage": [
+    {
+      "@type": "ComputerLanguage",
+      "name": "Python",
+      "version": ">=3.12"
+    }
+  ],
+  "runtimePlatform": "Python 3.12",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Jing",
+      "familyName": "Tao",
+      "email": "jingtao@lbl.gov",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Lawrence Berkeley National Laboratory",
+        "url": "https://www.lbl.gov/"
+      }
+    }
+  ],
+  "keywords": [
+    "permafrost",
+    "Alaska",
+    "active layer thickness",
+    "ground ice",
+    "thermokarst",
+    "DOE BER",
+    "FAIR data",
+    "agentic workflow",
+    "scientific software",
+    "Earth system modeling"
+  ],
+  "datePublished": "2026-06-01",
+  "developmentStatus": "active",
+  "applicationCategory": "Earth System Science",
+  "softwareRequirements": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Python",
+      "version": ">=3.12"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "pydantic",
+      "version": ">=2.5"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "duckdb",
+      "version": ">=0.10"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "lancedb",
+      "version": ">=0.10"
+    }
+  ],
+  "relatedLink": [
+    "https://github.com/jingtao-lbl/A2MC-elm",
+    "https://ess-dive.lbl.gov/"
+  ]
+}

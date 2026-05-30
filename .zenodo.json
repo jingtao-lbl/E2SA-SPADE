@@ -1,0 +1,34 @@
+{
+  "title": "SPADE: Subsurface Permafrost Autonomous Discovery Engine",
+  "description": "<p>SPADE is the Subsurface Permafrost Autonomous Discovery Engine, an agentic data-preparation and model-simulation-setup agent for coupled surface-subsurface Earth system workflows. SPADE assembles permafrost observations and forcing datasets from CALM active-layer thickness, UAF GIPL borehole temperatures, GTN-P, the Alaska Permafrost Thaw Database (Webb et al. 2026), CommUnity near-Surface Permafrost (CUSP), NASA ABoVE, NGEE-Arctic, and additional Arctic data portals (ESS-DIVE, NSIDC, NCAR RDA, NOAA AWS Open Data, ASF Vertex, USGS NWIS, NOAA NWLON, PGC); harmonizes them into a unified pydantic schema with DuckDB provenance; supports site and regional simulation setup for ELM, ATS, ELM-FATES, ELM-MOSART, and related models; and includes a literature-review agent built on Semantic Scholar and the paper-search-mcp multi-platform backend. The initial source-document catalog focuses on Alaska and the pan-Arctic; SPADE's adapter library, schema, and provenance catalog are designed to transfer to other regions and other coupled surface-subsurface prediction systems.</p>",
+  "creators": [
+    {
+      "name": "Tao, Jing",
+      "affiliation": "Lawrence Berkeley National Laboratory",
+      "orcid": ""
+    }
+  ],
+  "keywords": [
+    "permafrost",
+    "Alaska",
+    "active layer thickness",
+    "ground ice",
+    "thermokarst",
+    "DOE BER",
+    "FAIR data",
+    "agentic workflow",
+    "scientific software",
+    "Earth system modeling"
+  ],
+  "license": "BSD-3-Clause",
+  "upload_type": "software",
+  "access_right": "open",
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.19195000",
+      "relation": "isSupplementTo",
+      "scheme": "doi",
+      "resource_type": "software"
+    }
+  ]
+}
