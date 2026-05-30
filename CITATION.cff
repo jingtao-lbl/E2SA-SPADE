@@ -39,5 +39,12 @@ keywords:
   - Earth system modeling
 license: BSD-3-Clause
 version: 0.1.0
-date-released: "2026-06-01"
-# doi: <to be populated after Zenodo mints the concept DOI at first tagged release>
+date-released: "2026-05-30"
+doi: 10.5281/zenodo.20457346
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20457346
+    description: "Concept DOI (cite-all-versions)"
+  - type: doi
+    value: 10.5281/zenodo.20457347
+    description: "Version DOI (v0.1.0)"

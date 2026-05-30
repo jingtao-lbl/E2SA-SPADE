@@ -243,19 +243,24 @@ CC-BY-4.0 license text is at https://creativecommons.org/licenses/by/4.0/legalco
 
 ## Citation
 
-If you use SPADE in your research, please cite the Zenodo concept DOI for
-the most recent release (cite-all-versions) or a specific version DOI for
-reproducibility against a known code state:
+If you use SPADE in your research, please cite the Zenodo **concept DOI**
+(`10.5281/zenodo.20457346`). It is the cite-all-versions DOI and always
+resolves to the latest release:
+
+```
+Tao, J. (2026). SPADE: Subsurface Permafrost Autonomous Discovery Engine.
+Zenodo. https://doi.org/10.5281/zenodo.20457346
+```
+
+When reproducibility against a specific code state is required, cite the
+per-version DOI instead. For v0.1.0:
 
 ```
 Tao, J. (2026). SPADE: Subsurface Permafrost Autonomous Discovery Engine
-(Version 0.1.0) [Software]. Zenodo. https://doi.org/<concept-doi-pending>
+(v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.20457347
 ```
 
-A machine-readable citation block is in [CITATION.cff](CITATION.cff). The
-Zenodo DOIs are minted at first tagged release and will be populated into
-`CITATION.cff`, `codemeta.json`, `.zenodo.json`, and this README at that
-time.
+A machine-readable citation block is in [CITATION.cff](CITATION.cff).
 
 ## Contributing
 
