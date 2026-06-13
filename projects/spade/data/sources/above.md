@@ -128,6 +128,9 @@ Formats vary significantly across datasets.
 
 ## 7. Access Method
 
+### License and data use
+NASA EOSDIS data, including ABoVE products distributed through ORNL DAAC, are **free and open** and are **public domain as U.S. Government works**, with no period of exclusive access (NASA Earth Science Data and Information Policy, https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-information-policy). There is no special data-use agreement for ABoVE. Cite each dataset by its DOI. Public-domain status permits redistribution, but SPADE does not redistribute the data: adapters fetch each granule via `earthaccess` into the gitignored local `projects/spade/data/raw/` tree, and downstream users retrieve it the same way under NASA's open-data terms.
+
 ### Authentication
 All ORNL DAAC datasets require a free **NASA Earthdata Login** account (https://urs.earthdata.nasa.gov/). No special data use agreements for ABoVE.
 

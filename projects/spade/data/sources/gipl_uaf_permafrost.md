@@ -16,6 +16,10 @@ Primary in-situ source for soil temperature profiles and borehole measurements i
 - Lead investigator: Vladimir Romanovsky
 - The lab maintains 200+ boreholes in Alaska and Russia. A curated subset is used for SPADE.
 
+## License and data use
+
+The UAF Geophysical Institute Permafrost Laboratory does not publish an explicit data license or redistribution statement alongside its public site list. Absent stated terms, treat the upstream data as **all rights reserved**: do not redistribute, and cite the lab and the relevant publications (including Tao et al. 2017 for the curated 161-site Alaska subset). SPADE does not host or redistribute these data. The curated subset is pending deposit to ESS-DIVE (DOE BER data repository at LBNL), where it will be released under CC-BY-4.0; until then, retrieve observations directly from the UAF Permafrost Lab and contact the lab for permissions beyond personal research use.
+
 
 ## Variables
 

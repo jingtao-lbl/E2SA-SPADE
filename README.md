@@ -218,11 +218,16 @@ Software (BSSw).
   Metadata for SPADE-curated data products follows ESS-DIVE conventions.
 - **Software licensing.** Source code under BSD-3-Clause (this repository).
   Documentation under CC-BY-4.0 (see License section below).
-- **Data products.** SPADE-curated data products are released through
-  ESS-DIVE (DOE BER data repository at LBNL) with CC-BY-4.0 licensing.
-  The GitHub repository hosts source code and documentation, not data
-  files; per-source data cards under `projects/spade/data/sources/`
-  describe where the underlying datasets live and how to fetch them.
+- **Data products and third-party datasets.** This repository hosts source
+  code and documentation, not data. SPADE does not redistribute third-party
+  datasets through GitHub unless a dataset's license explicitly permits
+  redistribution. Instead, adapters download each source into a gitignored
+  local `projects/spade/data/raw/` tree, and the per-source cards under
+  `projects/spade/data/sources/` record each dataset's origin, license, and
+  fetch instructions, so users retrieve the data themselves under its own
+  terms. SPADE-curated derived products that are cleared for release are
+  published through ESS-DIVE (DOE BER data repository at LBNL) under
+  CC-BY-4.0.
 - **Best practices.** SPADE follows Better Scientific Software practices
   (https://bssw.io/): public GitHub repository, branch protection on
   `main`, versioned environment specifications, DuckDB provenance for
@@ -279,6 +284,8 @@ A2MC (Agentic Adaptive Multi-target Calibration) work at
 https://github.com/jingtao-lbl/A2MC-elm.
 
 Upstream data sources are credited in the per-source cards under
-`projects/spade/data/sources/`. The Alaska Permafrost Thaw Database (Webb
-et al. 2026) and the CALM, GTN-P, NASA ABoVE, NGEE-Arctic, and related
-networks are the foundational observation sources for the v0.1.0 release.
+`projects/spade/data/sources/`.
+
+## Funding
+
+This work was supported by the DOE BER NGEE-Arctic project.
