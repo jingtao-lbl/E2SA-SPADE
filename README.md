@@ -191,15 +191,22 @@ authentication), variables and units, spatial and temporal coverage, format,
 known gotchas, and adapter design notes. The cards are the contract between
 the upstream source and any SPADE adapter built against it.
 
-An open SPADE data-preparation task is documented at
+### Tasks
+
+`projects/spade/tasks/` is a drop-box for data-preparation requests. To start
+a job, add a task folder with a spec (copy
+[tasks/TASK_TEMPLATE.md](projects/spade/tasks/TASK_TEMPLATE.md)): the spec
+scopes what to assemble (atmospheric forcing, surface datasets, observations,
+or QC/analysis), and the same folder is where progress is tracked. SPADE picks
+up the task, prepares the data, and reports back through a status file in the
+folder.
+
+A worked example ships at
 [projects/spade/tasks/20260521-doe-ecrp-fy26-event-catalog/](projects/spade/tasks/20260521-doe-ecrp-fy26-event-catalog/20260521-doe-ecrp-fy26-event-catalog.md):
-assembling atmospheric forcing, observations, and analysis-ready inputs
-for an Alaska extreme-event catalog spanning the state's coastal gradient,
-partitioned into calibration and validation events for hazard-modeling
-experiments. The task spec is the live contract SPADE delivers against;
-the full event catalog, per-event forcing-source assignments, reference
-list, and acceptance criteria are in the file. The same catalog template
-is reusable for other regional hazard-modeling efforts.
+assembling forcing, observations, and analysis-ready inputs for an Alaska
+extreme-event catalog spanning the state's coastal gradient, partitioned into
+calibration and validation events for hazard-modeling experiments. Use it as a
+template for authoring your own tasks.
 
 ## Agents
 
