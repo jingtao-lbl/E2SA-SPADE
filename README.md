@@ -126,7 +126,7 @@ E2SA-SPADE/
 ├── tests/                               pytest suite + fixtures
 ├── projects/spade/
 │   ├── data/sources/                    Per-source documentation cards
-│   └── tasks/                           Task templates and the 26-event catalog
+│   └── tasks/                           Task templates and an extreme-event catalog
 ├── LICENSE
 ├── README.md                            (this file)
 ├── CITATION.cff
@@ -193,14 +193,13 @@ the upstream source and any SPADE adapter built against it.
 
 An open SPADE data-preparation task is documented at
 [projects/spade/tasks/20260521-doe-ecrp-fy26-event-catalog/](projects/spade/tasks/20260521-doe-ecrp-fy26-event-catalog/20260521-doe-ecrp-fy26-event-catalog.md):
-assembling forcing, observations, and analysis-ready inputs for a
-26-event Alaska extreme-event catalog covering the four-Region Alaska
-coastal gradient, partitioned into 7 calibration events and 19 validation
-events (5 benchmark + 14 non-benchmark). The task spec is the live
-contract SPADE will deliver against; the catalog table, per-event
-forcing-source assignments, reference list, and acceptance criteria
-follow the file. The same catalog template is reusable for other
-regional hazard-modeling efforts.
+assembling atmospheric forcing, observations, and analysis-ready inputs
+for an Alaska extreme-event catalog spanning the state's coastal gradient,
+partitioned into calibration and validation events for hazard-modeling
+experiments. The task spec is the live contract SPADE delivers against;
+the full event catalog, per-event forcing-source assignments, reference
+list, and acceptance criteria are in the file. The same catalog template
+is reusable for other regional hazard-modeling efforts.
 
 ## Agents
 
