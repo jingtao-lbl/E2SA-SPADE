@@ -140,7 +140,7 @@ sources catalogued under `projects/spade/data/sources/`.
 
 ### Twelve portal adapters
 
-| # | Portal | Datasets served (examples) | v0.1.0 status |
+| # | Portal | Datasets served (examples) | status |
 |---|---|---|---|
 | 1 | ESS-DIVE | NGEE-Arctic flux, soil thermal, vegetation, ecohydrology | roadmap |
 | 2 | NSF Arctic Data Center | Kanevskiy 2024 cryostratigraphy / ground-ice cores | roadmap |
@@ -155,11 +155,11 @@ sources catalogued under `projects/spade/data/sources/`.
 | 11 | NOAA NWLON | tide gauges at Nome, Stebbins, Unalakleet, Valdez, Cordova | roadmap |
 | 12 | PGC | ArcticDEM time-stamped strips | roadmap |
 
-### Source documentation coverage (v0.1.0)
+### Source documentation coverage
 
-Seven source-documentation cards ship with v0.1.0; ten more land in the
-v0.2+ adapter buildout, paired with the actual portal adapter
-implementations.
+Each documented source has a card below; the Adapter status column tracks
+which sources have a working adapter. New cards are added as sources are
+onboarded, paired with their portal adapter implementations.
 
 | Source | Card | Adapter status |
 |---|---|---|
@@ -217,10 +217,9 @@ python -m e2sa.agents.litreview search \
 python -m e2sa.agents.litreview list --catalog data/lance --limit 10
 ```
 
-**Scope at v0.1.0.** The agent currently covers the search and triage
-stages (workflow stages 3 and 4 of a reproducible literature-review
-pipeline). PDF acquisition, full-text extraction, and structured synthesis
-are on the roadmap for v0.3+, not yet implemented.
+The agent covers the search and triage stages of a reproducible
+literature-review pipeline: themed multi-platform search, relevance
+screening, DOI verification, and deduplicated ingest into the local store.
 
 ## Data management
 
