@@ -217,12 +217,12 @@ quality control, and generative model development for permafrost mapping.
 It runs in two modes that share one substrate (the DuckDB catalog, the vector
 store, the skills, and the run journal), so discoveries compound across both:
 
-- **Autonomous mode** drives the pipeline from a run configuration through the
+- **Online (Autonomous) mode** drives the pipeline from a run configuration through the
   orchestrator (`e2sa.orchestrator`) and the `e2sa` CLI, with configurable
   human-in-the-loop checkpoints.
-- **Interactive mode** is a coding-agent harness operating in the repository,
+- **Offline (Interactive) mode** is a coding-agent harness operating in the repository,
   guided by `AGENTS.md` and the skills under `.claude/skills/`, for the
-  open-ended work a fixed pipeline cannot cover.
+  human-in-the-loop (HITL) interactive work the online/autonomous pipeline cannot cover.
 
 ## Data management
 
