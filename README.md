@@ -126,7 +126,7 @@ E2SA-SPADE/
 ├── tests/                               pytest suite + fixtures
 ├── projects/spade/
 │   ├── data/sources/                    Per-source documentation cards
-│   └── tasks/                           Task templates and an extreme-event catalog
+│   └── tasks/                           Task templates
 ├── LICENSE
 ├── README.md                            (this file)
 ├── CITATION.cff
@@ -212,32 +212,7 @@ template for authoring your own tasks.
 
 SPADE is designed as a multi-agent pipeline: an orchestrator plus specialist
 agents for literature review, data discovery, retrieval, harmonization,
-quality control, modeling, and reporting.
-
-### Literature-review agent
-
-The `e2sa.agents.litreview` agent searches scientific literature, screens
-results for relevance, verifies DOIs against CrossRef, and ingests into a
-local LanceDB store with deduplication.
-
-**Default backend** is `paper-search-mcp`, which fans out across Google
-Scholar, PubMed, arXiv, bioRxiv, and medRxiv per theme. Semantic Scholar is
-available as an alternative single-query backend via `--backend ss`.
-
-```bash
-# Themed search across multiple platforms (default)
-python -m e2sa.agents.litreview search \
-    --themes "permafrost ground ice,thermokarst Alaska,InSAR permafrost" \
-    --max 5 \
-    --catalog data/lance
-
-# List what's in the local store
-python -m e2sa.agents.litreview list --catalog data/lance --limit 10
-```
-
-The agent covers the search and triage stages of a reproducible
-literature-review pipeline: themed multi-platform search, relevance
-screening, DOI verification, and deduplicated ingest into the local store.
+quality control, and generative model development for permafrost mapping. 
 
 ## Data management
 
