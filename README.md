@@ -110,12 +110,20 @@ to its upstream source.
 E2SA-SPADE/
 ├── e2sa/                                Vendored E2SA framework slice
 │   ├── schema.py                        Unified pydantic observation schema
-│   ├── data/                            Source adapters (CALM, GTN-P, ABoVE, ...)
+│   ├── config.py                        Run configuration
+│   ├── data/                            Source adapters (CALM, GTN-P, ABoVE,
+│   │                                      ESS-DIVE, ...) + indexing + registry
 │   ├── catalog/                         DuckDB provenance catalog
 │   ├── qc/                              Quality-control checks
 │   ├── harmonize/                       Geospatial harmonization
-│   └── agents/litreview/                Literature-review agent (search + triage)
-├── tests/                               pytest suite
+│   ├── rag/                             LanceDB vector store
+│   ├── agents/litreview/                Literature-review agent (search + triage)
+│   └── orchestrator.py                  Autonomous-mode driver (acquire())
+├── e2sa_cli/                            `e2sa` CLI (acquire, catalog, init, ...)
+├── .claude/skills/                      Interactive-agent skills
+├── AGENTS.md                            Interactive-agent operating contract
+├── CONTRIBUTING.md                      Contributor guide
+├── tests/                               pytest suite + fixtures
 ├── projects/spade/
 │   ├── data/sources/                    Per-source documentation cards
 │   └── tasks/                           Task templates and the 26-event catalog
@@ -132,6 +140,10 @@ E2SA-SPADE/
 The vendored `e2sa/` slice contains the SPADE-relevant subset of the parent
 E2SA framework. When the E2SA framework lands as its own public repository,
 SPADE will switch from vendoring to a pip dependency.
+
+The layout supports both agent modes: the autonomous mode runs through
+`e2sa/orchestrator.py` and the `e2sa` CLI (`e2sa_cli/`), while the interactive
+mode operates against `AGENTS.md` (the operating contract) and `.claude/skills/`.
 
 ## Data source catalog
 
