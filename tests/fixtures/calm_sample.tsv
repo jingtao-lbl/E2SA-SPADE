@@ -1,0 +1,12 @@
+/* Dataset: CALM ALT Sample Fixture */
+/* For unit testing only */
+Event label	Site	Name	Identification	Country	Area/locality	Latitude of event	Longitude of event	DATE/TIME	ALD [cm]	Sample comment	Comment
+U1_2020	U1	Barrow	GTN-P-U1	United States	Alaska, North Slope	71.317	-156.600	2020	38.5
+U1_2021	U1	Barrow	GTN-P-U1	United States	Alaska, North Slope	71.317	-156.600	2021	42.1
+U1_2022	U1	Barrow	GTN-P-U1	United States	Alaska, North Slope	71.317	-156.600	2022	-		missing year
+U28_2020	U28	Kougarok	GTN-P-U28	United States	Alaska, Seward Peninsula	65.454	-164.627	2020	55.2
+U28_2021	U28	Kougarok	GTN-P-U28	United States	Alaska, Seward Peninsula	65.454	-164.627	2021	160.0		possible probe refusal
+U11A_2019	U11A	Imnavait Creek	GTN-P-U11A	United States	Alaska, Brooks Range	68.611	-149.310	2019	44.8
+R1_2020	R1	Marre Sale	GTN-P-R1	Russia	Yamal	69.717	66.817	2020	120.0		should be filtered out
+R1_2021	R1	Marre Sale	GTN-P-R1	Russia	Yamal	69.717	66.817	2021	115.3		should be filtered out
+U41_2022	U41	Farmers Loop	GTN-P-U41	United States	Alaska, Interior	64.880	-147.670	2022	87.6

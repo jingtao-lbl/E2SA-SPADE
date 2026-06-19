@@ -1,0 +1,10 @@
+region,locale,administrative_area,site,area,polygon_ID,polygon_sub_unit,plot_ID,plot_type,polygon_type,northing,easting
+N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,m,m
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,7910413.488,585530.849
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,7910413.638,585529.925
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,7910414.625,585530.097
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,7910414.442,585531.050
+North Slope,Barrow,BEO,Intensive Site 1,A,1,edge,A1E,vegetation,low-centered,7910409.429,585531.847
+North Slope,Barrow,BEO,Intensive Site 1,A,1,edge,A1E,vegetation,low-centered,7910410.015,585531.092
+North Slope,Barrow,BEO,Intensive Site 1,A,1,edge,A1E,vegetation,low-centered,7910410.736,585531.671
+North Slope,Barrow,BEO,Intensive Site 1,A,1,edge,A1E,vegetation,low-centered,7910410.118,585532.438

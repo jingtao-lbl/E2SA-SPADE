@@ -1,0 +1,7 @@
+Column_or_Row_Name,Unit,Definition,Column_or_Row_Long_Name,Data_Type
+plot_ID,N/A,Plot identifier. Missing values = 'not_determined',Plot ID,text
+soil_temperature_5cm,degC,Soil temperature at 5 cm depth. Missing values = -9999,Soil temperature 5cm,numeric
+soil_temperature_15cm,degC,Soil temperature at 15 cm depth. Missing values = -9999,Soil temperature 15cm,numeric
+soil_temperature_25cm,degC,Soil temperature at 25 cm depth. Missing values = -9999,Soil temperature 25cm,numeric
+volumetric_soil_moisture,m3 m-3,Volumetric soil moisture. Missing values = -9999,Volumetric soil moisture,numeric
+thaw_depth,cm,Thaw depth measured weekly. Missing values = -9999,Thaw depth,numeric

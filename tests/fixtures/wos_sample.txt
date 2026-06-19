@@ -1,0 +1,64 @@
+FN Clarivate Analytics Web of Science
+VR 1.0
+PT J
+AU Webb, H
+   Pierce, E
+AF Webb, Hailey
+   Pierce, Ethan
+TI A Comprehensive Database of Thawing Permafrost Locations Across
+   Alaska
+SO Earth System Science Data Discussions
+LA English
+DT Article
+DE permafrost; thermokarst; Alaska; thaw; database
+ID PERMAFROST DEGRADATION; THERMOKARST; ALASKA
+AB We compiled the most comprehensive database of permafrost thaw and
+   thermokarst features across Alaska, drawing on 44 sources and
+   including 19,540 labeled locations. The database provides a
+   consistent training and validation corpus for machine-learning
+   models of permafrost hazard.
+TC 5
+Z9 5
+PY 2025
+DI 10.5194/essd-2025-557
+UT WOS:001234567890001
+WC Geosciences, Multidisciplinary
+SC Geology
+PU COPERNICUS
+SN 1866-3508
+EI 1866-3516
+ER
+
+PT B
+AU Smith, J
+   Jones, K
+AF Smith, James
+   Jones, Karen
+BE Editor, A
+TI Permafrost Mapping with Satellite Data
+SO HANDBOOK OF CRYOSPHERE REMOTE SENSING
+LA English
+DT Book Chapter
+AB This chapter reviews the state of the art in satellite-based
+   permafrost mapping. We cover thermal, optical, and radar sensors
+   with a focus on Arctic applications.
+PY 2020
+UT WOS:000999999999001
+WC Geosciences
+PU ACADEMIC PRESS
+BN 978-0-00-000000-0
+ER
+
+PT S
+AU Anonymous, A
+AF Anonymous, Anonymous
+TI Proceedings Paper Without Abstract
+SO PROCEEDINGS OF THE WORKSHOP ON ARCTIC SCIENCE
+LA English
+DT Proceedings Paper
+PY 2019
+UT WOS:000888888888001
+TC 0
+ER
+
+EF

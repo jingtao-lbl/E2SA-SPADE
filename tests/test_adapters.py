@@ -5,17 +5,14 @@ without hitting real network endpoints.
 """
 from __future__ import annotations
 
-import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
-
+from e2sa.data.above import ABoVEAdapter
+from e2sa.data.alaska_thaw_db import AlaskaThawDBAdapter
 from e2sa.data.base import FetchResult
 from e2sa.data.calm import CALMAdapter
 from e2sa.data.gtnp import GTNPAdapter
-from e2sa.data.alaska_thaw_db import AlaskaThawDBAdapter
-from e2sa.data.above import ABoVEAdapter
 from e2sa.schema import ObservationType, Variable
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -24,7 +21,7 @@ FAKE_FETCH = FetchResult(
     dataset_id="test",
     local_path=Path("placeholder"),
     bytes_downloaded=0,
-    access_timestamp=datetime(2026, 4, 12, tzinfo=timezone.utc),
+    access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
     content_checksum="test_checksum",
     source_url="https://test.invalid",
 )
@@ -35,7 +32,7 @@ def _fetch_result(fixture_path: Path) -> FetchResult:
         dataset_id="test",
         local_path=fixture_path,
         bytes_downloaded=fixture_path.stat().st_size,
-        access_timestamp=datetime(2026, 4, 12, tzinfo=timezone.utc),
+        access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
         content_checksum="fixture_checksum",
         source_url="https://test.invalid",
     )
@@ -97,7 +94,9 @@ class TestGTNPAdapter:
         adapter = GTNPAdapter(raw_dir=Path("/tmp/test_gtnp"))
         fr = _fetch_result(FIXTURES / "gtnp_sample.tsv")
         obs = adapter.parse_to_schema(fr)
-        bh001_depths = sorted(o.depth_m for o in obs if "BH001" in o.obs_id and o.depth_m is not None)
+        bh001_depths = sorted(
+            o.depth_m for o in obs if "BH001" in o.obs_id and o.depth_m is not None
+        )
         assert bh001_depths == [0.0, 1.0, 5.0, 10.0]
 
     def test_parse_skips_missing_temperature(self) -> None:
@@ -113,6 +112,24 @@ class TestGTNPAdapter:
         fr = _fetch_result(FIXTURES / "gtnp_sample.tsv")
         obs = adapter.parse_to_schema(fr)
         assert all(o.unit == "degC" for o in obs)
+
+    def test_obs_ids_are_unique_across_stations_with_shared_event(self, tmp_path: Path) -> None:
+        """Regression: real 2025 PANGAEA reuses event labels like 'MAGT_06_24'
+        across many stations. obs_id must include station name + coords."""
+        tsv = tmp_path / "shared_event.tsv"
+        tsv.write_text(
+            "/* test fixture */\n"
+            "Event label\tName\tLatitude of event\tLongitude of event\tDATE/TIME\t"
+            "Frequency\tDEPTH, sediment/rock [m]\tTemp [°C]\tProvenance/source\tAuthor(s)\n"
+            "MAGT_06_24\tStation_A\t68.6134\t161.3498\t2014\thourly\t5.00\t-5.10\tsrc\tauthor\n"
+            "MAGT_06_24\tStation_B\t70.1234\t-149.5678\t2014\thourly\t5.00\t-3.20\tsrc\tauthor\n",
+            encoding="utf-8",
+        )
+        adapter = GTNPAdapter(raw_dir=tmp_path)
+        obs = adapter.parse_to_schema(_fetch_result(tsv))
+        assert len(obs) == 2
+        ids = {o.obs_id for o in obs}
+        assert len(ids) == 2, f"obs_id collision: {[o.obs_id for o in obs]}"
 
 
 # --- Alaska Thaw DB ---
@@ -160,8 +177,9 @@ def _parse_csv_directly(adapter: AlaskaThawDBAdapter, fr: FetchResult) -> list:
     """Parse a CSV file directly, bypassing ZIP extraction."""
     import csv
     import io
+
+    from e2sa.data.alaska_thaw_db import ADAPTER_VERSION, FEATURE_CATEGORIES
     from e2sa.schema import Observation, ObservationType, Provenance, Variable
-    from e2sa.data.alaska_thaw_db import FEATURE_CATEGORIES, ADAPTER_VERSION
 
     text = fr.local_path.read_text(encoding="utf-8")
     reader = csv.DictReader(io.StringIO(text))
@@ -228,7 +246,7 @@ class TestABoVEAdapter:
             dataset_id="above_stdm_1903",
             local_path=FIXTURES / "above_stdm_sample.csv",
             bytes_downloaded=(FIXTURES / "above_stdm_sample.csv").stat().st_size,
-            access_timestamp=datetime(2026, 4, 12, tzinfo=timezone.utc),
+            access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
             content_checksum="fixture",
             source_url="https://test.invalid",
         )
@@ -241,7 +259,7 @@ class TestABoVEAdapter:
             dataset_id="above_stdm_1903",
             local_path=FIXTURES / "above_stdm_sample.csv",
             bytes_downloaded=100,
-            access_timestamp=datetime(2026, 4, 12, tzinfo=timezone.utc),
+            access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
             content_checksum="fixture",
             source_url="https://test.invalid",
         )

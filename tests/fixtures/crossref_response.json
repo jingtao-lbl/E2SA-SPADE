@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "message-type": "work",
+  "message-version": "1.0.0",
+  "message": {
+    "DOI": "10.5194/essd-14-865-2022",
+    "title": [
+      "New high-resolution estimates of the permafrost thermal state and hydrothermal conditions for the Northern Hemisphere"
+    ],
+    "container-title": ["Earth System Science Data"],
+    "publisher": "Copernicus GmbH",
+    "issued": {"date-parts": [[2022, 2, 18]]},
+    "author": [
+      {"given": "Youhua", "family": "Ran"},
+      {"given": "Xin", "family": "Li"},
+      {"given": "Guodong", "family": "Cheng"}
+    ],
+    "type": "journal-article",
+    "is-referenced-by-count": 87
+  }
+}

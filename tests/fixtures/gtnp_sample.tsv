@@ -1,0 +1,13 @@
+/* Dataset: GTN-P MAGT Sample Fixture */
+/* For unit testing only */
+Event label	Name	Latitude of event	Longitude of event	DATE/TIME	Frequency	DEPTH, sediment/rock [m]	Temp [°C]	Provenance/source	Author(s)	Identification	Reference/source	Reference/source.1
+BH001	Deadhorse	70.161	-148.465	2015	hourly	0.0	-5.2	USGS	Romanovsky	GTN-P-BH001	Romanovsky et al. 2020
+BH001	Deadhorse	70.161	-148.465	2015	hourly	1.0	-6.8	USGS	Romanovsky	GTN-P-BH001	Romanovsky et al. 2020
+BH001	Deadhorse	70.161	-148.465	2015	hourly	5.0	-8.1	USGS	Romanovsky	GTN-P-BH001	Romanovsky et al. 2020
+BH001	Deadhorse	70.161	-148.465	2015	hourly	10.0	-9.0	USGS	Romanovsky	GTN-P-BH001	Romanovsky et al. 2020
+BH002	Fairbanks	64.880	-147.670	2018	daily	0.0	-0.5	UAF	Romanovsky	GTN-P-BH002	Romanovsky et al. 2020
+BH002	Fairbanks	64.880	-147.670	2018	daily	1.0	-1.2	UAF	Romanovsky	GTN-P-BH002	Romanovsky et al. 2020
+BH002	Fairbanks	64.880	-147.670	2018	daily	5.0	-2.1	UAF	Romanovsky	GTN-P-BH002	Romanovsky et al. 2020
+BH003	Galbraith Lake	68.477	-149.502	2010	annual	0.0	-3.4	USGS	Osterkamp	GTN-P-BH003	Osterkamp 2018
+BH003	Galbraith Lake	68.477	-149.502	2010	annual	2.0	-5.6	USGS	Osterkamp	GTN-P-BH003	Osterkamp 2018
+BH003	Galbraith Lake	68.477	-149.502	2010	annual	10.0		USGS	Osterkamp	GTN-P-BH003	Osterkamp 2018

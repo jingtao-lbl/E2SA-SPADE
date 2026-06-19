@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "e2sa-spade"
-version = "0.1.0"
+version = "0.2.0"
 description = "SPADE: Subsurface Permafrost Autonomous Discovery Engine. Agentic data-preparation and model-simulation-setup agent for coupled surface-subsurface Earth system workflows. Includes a vendored slice of the E2SA framework (schema, catalog, harmonize, qc, data adapters, literature-review agent)."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -63,13 +63,16 @@ mcp = [
     "paper-search-mcp",
 ]
 
+[project.scripts]
+e2sa = "e2sa_cli.cli:cli"
+
 [project.urls]
 Repository = "https://github.com/jingtao-lbl/E2SA-SPADE"
 Issues = "https://github.com/jingtao-lbl/E2SA-SPADE/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["e2sa*"]
+include = ["e2sa*", "e2sa_cli*"]
 
 [tool.ruff]
 line-length = 100

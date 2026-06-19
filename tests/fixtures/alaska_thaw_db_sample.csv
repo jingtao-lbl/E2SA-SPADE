@@ -1,0 +1,11 @@
+Authors,DOI,DataSourceType,FeatureName,Latitude,Longitude,FeatureType,FeatureCategory,ThawType,Imagery,ImageryDates,ImageryResolution_meters
+"Jones and Zuck, 2016",https://doi.org/10.1234/example1,Remote sensing - published,Lake Alpha,70.123,-156.456,Thermokarst lake,Thermokarst lake,Abrupt,"SAR; Landsat TM; ETM+; OLI",1985 through 2015,30
+"Nitze et al., 2020a",https://doi.org/10.1234/example2,Remote sensing - published,,69.876,-148.234,Thermokarst lake,Thermokarst lake,Abrupt,"Landsat; Sentinel-1; PlanetScope","1999 through 2018","30; 3.125"
+"Swanson, 2021",https://doi.org/10.1234/example3,Remote sensing - published,RTS-001,68.500,-149.100,Retrogressive thaw slump,Retrogressive thaw slump,Abrupt,"Alaska high altitude aerial photographs; IKONOS","1977 through 2015","1.5; 4"
+"Abbott and Jones, 2013",https://doi.org/10.1234/example4,Field - published,ALD-Site-12,71.200,-156.300,Active layer detachment,Active layer detachment,Abrupt,,,
+"Jorgenson, 2013",https://doi.org/10.1234/example5,Field - published,,69.500,-150.200,Thermoerosional gully,Thermoerosional gully,Abrupt,,,
+"Gooseff, 2016",https://doi.org/10.1234/example6,Field - published,Pond-3,70.800,-155.900,Thaw pond,Thaw pond,Abrupt,,,
+"Whitley et al., 2018",https://doi.org/10.1234/example7,Field - published,Site-W1,64.200,-145.600,,Non-abrupt,Non-abrupt,,,
+"Jorgenson et al., 2022",N/A,Remote sensing/photo-interpretation - published,,66.100,-162.300,Thermokarst wetland,Thermokarst wetland,Abrupt,Photo-interpretation,,
+"Liljedahl et al., 2007",https://doi.org/10.1234/example8,Field - published,Fire-Site-A,65.800,-148.900,Wildfire-induced thaw,Wildfire-induced thaw,Abrupt,,,
+"Harms et al., 2013",https://doi.org/10.1234/example9,Field - published,,68.200,-149.800,Thermokarst,Thermokarst,Abrupt,,,

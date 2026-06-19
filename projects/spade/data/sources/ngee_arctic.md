@@ -74,7 +74,7 @@ NGEE-Arctic data on ESS-DIVE spans roughly the following categories (each backed
 
 **Fetch strategy.** Per dataset DOI: (1) query the ESS-DIVE API for the dataset record; (2) iterate over the dataset's file list; (3) download each file with checksum verification; (4) cache under `data/raw/ngee_arctic/<dataset_doi_slug>/`. The fetch step is per-DOI, not per-portal; the orchestrator decides which DOIs are needed for a given run.
 
-**Authentication.** The adapter must accept an ORCID-bearer token from the environment (e.g. `ESSDIVE_TOKEN`). Open datasets work without it for downloads, but the search / metadata API typically requires it.
+**Authentication.** The adapter must accept an ORCID-bearer token from the environment (`ESS_DIVE_TOKEN`, the form used in `docs/design/05_agent_credentials.md` and `projects/spade/design/04_credentials_setup.md`). Open datasets work without it for downloads; the search / metadata API typically requires it. The token is short-lived (~18 h TTL), so the adapter must fail loud on an expired/missing token, not silently.
 
 **Discovery flow.** Before any fetch, the agent should use the ESS-DIVE API search endpoint (or scrape the project portal) to enumerate the candidate datasets for the requested variables and site, then surface the candidate DOIs to the human for approval. This is parallel to how `e2sa-discover` is supposed to behave for any multi-product source.
 

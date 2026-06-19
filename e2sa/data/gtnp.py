@@ -9,7 +9,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -54,7 +54,7 @@ class GTNPAdapter(BaseAdapter):
                 local_path=out_path,
                 bytes_downloaded=out_path.stat().st_size,
                 access_timestamp=datetime.fromtimestamp(
-                    out_path.stat().st_mtime, tz=timezone.utc
+                    out_path.stat().st_mtime, tz=UTC
                 ),
                 content_checksum=checksum,
                 source_url=PANGAEA_URL,
@@ -69,7 +69,7 @@ class GTNPAdapter(BaseAdapter):
             dataset_id=dataset_id,
             local_path=out_path,
             bytes_downloaded=len(raw_bytes),
-            access_timestamp=datetime.now(tz=timezone.utc),
+            access_timestamp=datetime.now(tz=UTC),
             content_checksum=_sha256(out_path),
             source_url=PANGAEA_URL,
         )
@@ -85,7 +85,13 @@ class GTNPAdapter(BaseAdapter):
 
         observations: list[Observation] = []
         for row in reader:
-            temp_str = row.get("Temp [°C]", "").strip()
+            # Real PANGAEA column name for this dataset is "MAGT [°C]"
+            # (Mean Annual Ground Temperature). The older "Temp [°C]" /
+            # "Temperature, ground, annual mean [°C]" variants are kept as
+            # fallbacks for other PANGAEA exports.
+            temp_str = row.get("MAGT [°C]", "").strip()
+            if not temp_str:
+                temp_str = row.get("Temp [°C]", "").strip()
             if not temp_str:
                 temp_str = row.get("Temperature, ground, annual mean [°C]", "").strip()
             if not temp_str or temp_str == "-":
@@ -110,19 +116,43 @@ class GTNPAdapter(BaseAdapter):
             except ValueError:
                 depth_m = None
 
-            event = row.get("Event label", row.get("Event", "")).strip()
+            # Same OR-chained-fallback pattern as the lat/lon lookups above:
+            # fixture/older schema → real 2025 PANGAEA schema.
+            event = (row.get("Event label") or row.get("Event") or "").strip()
             name = row.get("Name", "").strip()
-            gtnp_id = row.get("Identification", "").strip()
-            date_str = row.get("DATE/TIME", "").strip()
-            frequency = row.get("Frequency", "").strip()
-            provenance_source = row.get("Provenance/source", "").strip()
-            authors = row.get("Author(s)", "").strip()
-            ref_orig = row.get("Reference/source", "").strip()
+            gtnp_id = (row.get("Identification") or row.get("ID") or "").strip()
+            date_str = (row.get("DATE/TIME") or row.get("Date/Time") or "").strip()
+            frequency = (
+                row.get("Frequency")
+                or row.get("Frequency (Measurement frequency of orig...)")
+                or ""
+            ).strip()
+            provenance_source = (
+                row.get("Provenance/source") or row.get("Source") or ""
+            ).strip()
+            authors = (
+                row.get("Author(s)")
+                or row.get("Author(s) (Author of original data)")
+                or ""
+            ).strip()
+            ref_orig = (
+                row.get("Reference/source")
+                or row.get("Reference (Reference to original data)")
+                or ""
+            ).strip()
 
             dt = _parse_date(date_str)
 
+            # obs_id must be unique per (station, depth, time). Event label
+            # alone collides across stations (the 2025 PANGAEA export reuses
+            # event labels like "MAGT_06_24" for many stations), so include
+            # station name + precise coords. Live evidence (2026-06-18): the
+            # event-only id collapsed 4,088 input rows to 715 catalog rows.
             obs = Observation(
-                obs_id=f"gtnp_{event}_{depth_str}m_{date_str}",
+                obs_id=(
+                    f"gtnp_{event}_{name}_{depth_str}m_{date_str}_"
+                    f"{lat:.4f}_{lon:.4f}"
+                ),
                 obs_type=ObservationType.PROFILE,
                 variable=Variable.GROUND_TEMPERATURE,
                 value=temp_c,
@@ -177,7 +207,7 @@ def _parse_date(date_str: str) -> datetime | None:
         return None
     for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%Y"):
         try:
-            return datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc)
+            return datetime.strptime(date_str, fmt).replace(tzinfo=UTC)
         except ValueError:
             continue
     return None

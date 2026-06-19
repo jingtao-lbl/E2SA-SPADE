@@ -8,7 +8,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -30,7 +30,10 @@ class CALMAdapter(BaseAdapter):
             DatasetInfo(
                 dataset_id=DATASET_ID,
                 name="CALM ALT Northern Hemisphere (PANGAEA)",
-                description="Site-average annual active layer thickness, 263 time series, 1990-2024",
+                description=(
+                    "Site-average annual active layer thickness, "
+                    "263 time series, 1990-2024"
+                ),
                 variables=["active_layer_thickness"],
                 spatial_coverage="Northern Hemisphere (filter to US for Alaska)",
                 temporal_coverage="1990-2024",
@@ -50,7 +53,7 @@ class CALMAdapter(BaseAdapter):
                 local_path=out_path,
                 bytes_downloaded=out_path.stat().st_size,
                 access_timestamp=datetime.fromtimestamp(
-                    out_path.stat().st_mtime, tz=timezone.utc
+                    out_path.stat().st_mtime, tz=UTC
                 ),
                 content_checksum=checksum,
                 source_url=PANGAEA_URL,
@@ -65,7 +68,7 @@ class CALMAdapter(BaseAdapter):
             dataset_id=dataset_id,
             local_path=out_path,
             bytes_downloaded=len(raw_bytes),
-            access_timestamp=datetime.now(tz=timezone.utc),
+            access_timestamp=datetime.now(tz=UTC),
             content_checksum=_sha256(out_path),
             source_url=PANGAEA_URL,
         )
@@ -77,8 +80,12 @@ class CALMAdapter(BaseAdapter):
 
         observations: list[Observation] = []
         for row in reader:
+            # Accept both the real PANGAEA value "United States (Alaska)" and
+            # the bare "United States" (used by older PANGAEA exports + the
+            # test fixture). Skip anything else — CALM has many non-US sites
+            # but SPADE only cares about Alaska.
             country = row.get("Country", "").strip()
-            if country != "United States":
+            if not (country.startswith("United States") or "Alaska" in country):
                 continue
 
             alt_str = row.get("ALD [cm]", "").strip()
@@ -90,15 +97,21 @@ class CALMAdapter(BaseAdapter):
             except ValueError:
                 continue
 
-            event = row.get("Event label", "").strip()
+            # Column names differ between the older fixture/export ("Event
+            # label", "Latitude of event", "DATE/TIME", "Identification") and
+            # the real 2025 PANGAEA export ("Event", "Latitude", "Date/Time",
+            # "ID"). Look up both for each field.
+            event = (row.get("Event label") or row.get("Event") or "").strip()
             site_code = row.get("Site", "").strip()
             site_name = row.get("Name", "").strip()
-            gtnp_id = row.get("Identification", "").strip()
-            date_str = row.get("DATE/TIME", "").strip()
+            gtnp_id = (row.get("Identification") or row.get("ID") or "").strip()
+            date_str = (row.get("DATE/TIME") or row.get("Date/Time") or "").strip()
 
             try:
-                lat = float(row.get("Latitude of event", "").strip())
-                lon = float(row.get("Longitude of event", "").strip())
+                lat_raw = row.get("Latitude of event") or row.get("Latitude") or ""
+                lon_raw = row.get("Longitude of event") or row.get("Longitude") or ""
+                lat = float(lat_raw.strip())
+                lon = float(lon_raw.strip())
             except (ValueError, AttributeError):
                 continue
 
@@ -165,7 +178,7 @@ def _parse_date(date_str: str) -> datetime | None:
         return None
     for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%Y"):
         try:
-            return datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc)
+            return datetime.strptime(date_str, fmt).replace(tzinfo=UTC)
         except ValueError:
             continue
     return None

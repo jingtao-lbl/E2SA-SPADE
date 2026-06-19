@@ -2,7 +2,23 @@
 
 Datasets are grouped by status. **Bootstrap** sources are the Phase 1 adapter targets. **Additional documented sources** are catalogued with full data cards but scoped to later adapter phases. **Local archives (brief)** are catalogued but not yet documented in full.
 
-**Naming convention.** Source docs are named by the **project** (NGEE-Arctic, NASA ABoVE, CALM, GTN-P, etc.), not by the data center hosting them. The data center (ESS-DIVE, Earthdata / ORNL DAAC, PANGAEA, Zenodo, USGS ScienceBase, etc.) is documented inside each project's source doc under "Access." Adapters under `e2sa/data/` may be project-scoped (when only one project uses a given upstream) or data-center-scoped (when several projects share an API, auth scheme, and format conventions); that decision is made at adapter-implementation time, not in the source-doc layer.
+**Naming convention.** Source docs are named by the **project** (NGEE-Arctic, NASA ABoVE, CALM, GTN-P, etc.), not by the data center hosting them. The data center (ESS-DIVE, Earthdata / ORNL DAAC, PANGAEA, Zenodo, USGS ScienceBase, etc.) is documented inside each project's source doc under "Access." Adapters under `e2sa/data/` may be project-scoped (when only one project uses a given upstream) or data-center-scoped (when several projects share an API, auth scheme, and format conventions); that decision is made at adapter-implementation time, not in the source-doc layer. The raw-download folder mirrors the card name: `data/raw/<source>/<dataset>/` uses the project/standalone-dataset name for `<source>` (matching the adapter `source_id`), not the data center. See `../../CLAUDE.md` §9 for the full folder-naming rule.
+
+## Data centers (registry)
+
+Source docs are named by project, but the **data center** hosting them determines auth, package format, and which metadata standard the indexer must parse. This registry is the cross-reference. The framework-design counterpart (how the indexer dispatches on these) is `docs/design/04_retrieval_and_indexing.md`; keep the two in sync.
+
+| Data center | Metadata standard | Package format | Auth (download / search) | Indexer parser path | Example dataset |
+|---|---|---|---|---|---|
+| ESS-DIVE (LBNL / DOE BER) | FLMD + per-file `*_dd.csv` + PDF user-file | flat directory | download open / search uses ORCID bearer JWT (18 h TTL) | FLMD + dd-CSV | Sloan 2014 (NGEE-Arctic) |
+| NSF Arctic Data Center (DataONE) | EML 2.2.0 single XML | BagIt (MD5 manifest) | open | EML XML | Kanevskiy 2024 |
+| NASA Earthdata (ORNL DAAC / NSIDC / ASF) | CMR / UMM-G | varies (CSV, NetCDF, GeoTIFF) | Earthdata Login (`~/.netrc`) | TBD | NASA ABoVE |
+| PANGAEA | PANGAEA dataset metadata | tab-delimited + attachments | open | TBD | CALM, GTN-P |
+| Zenodo | DataCite | files in archive | open | TBD | Alaska Permafrost Thaw DB |
+| Copernicus CDS | request-based (no package) | NetCDF / GRIB | `~/.cdsapirc` | n/a (request API) | ERA5 |
+| PGC | STAC / strip metadata | GeoTIFF | open | TBD | ArcticDEM |
+
+**Latest-version rule.** When a data center versions datasets (e.g. the NSF Arctic Data Center mints a new DOI per version), always download and cite the **latest** version, and record the exact version DOI and version date in the source card.
 
 ## Bootstrap sources (Phase 1 targets)
 
@@ -22,11 +38,17 @@ Datasets are grouped by status. **Bootstrap** sources are the Phase 1 adapter ta
 | Thermokarst circumpolar map | polygon classification | Spatial prior. Thermokarst wetland, lake, hillslope distribution with SOC (Olefeldt et al. 2016) | [thermokarst_circumpolar.md](thermokarst_circumpolar.md) |
 | Circum-Arctic ground ice map | polygon + raster | Baseline comparison. Permafrost extent (5 classes) and ground ice content (4 classes). The map SPADE aims to improve. (Heginbottom et al. 2002) | [permafrost_ground_ice_map.md](permafrost_ground_ice_map.md) |
 | CUSP | labeled near-surface permafrost obs | Pan-Arctic synthesis of permafrost presence + active layer thickness + thaw depth from published studies and field work. GitHub-hosted, CSV + BibTeX, LANL-led (Schwenk et al.). Complements [alaska_thaw_db.md](alaska_thaw_db.md) by extending geographic footprint beyond Alaska. ECRP FY26 collaborator: Joel Rowland (LANL). | [cusp.md](cusp.md) |
+| Kanevskiy 2024 cryostratigraphy | in-situ ground-ice cores | **Direct field-measurement labels for excess-ice content (EIC)**, the SPADE ice-content product's primary anchor variable. 22 destructive sampling campaigns 2018-2023 at 8 Alaska sites (Utqiagvik, Teshekpuk, Prudhoe Bay, Anaktuvuk, Point Lay, Toolik, Itkillik, Jago) + 2 Canadian sites (filter at adapter level). Per-borehole EIC + GMC + VMC + cryostratigraphic-unit assignments. CC0 license. Current DOI 10.18739/A2H12V928 (predecessor 10.18739/A2QR4NS3D obsoleted 2025-08-08). | [kanevskiy_cryostratigraphy.md](kanevskiy_cryostratigraphy.md) |
 
 
 ## Adding a new source
 
-1. Create `<source_name>.md` in this folder following the existing docs as a template (sections: Role, Access, Summary, Variables, Format, Coverage, Gotchas, Adapter design notes).
-2. Add a row to the appropriate table above.
-3. If the source needs a new adapter, create `e2sa/data/<source_name>.py` extending `BaseAdapter`.
+**Card granularity.** One card per **program/network** (NGEE-Arctic, NASA ABoVE, CALM, GTN-P) or per **standalone dataset** (Kanevskiy 2024 cryostratigraphy, Webb Alaska Thaw DB). A single dataset *within* a program (e.g. Sloan 2014 inside NGEE-Arctic) does **not** get its own card; record its DOI + full citation in the program card's dataset list and in the per-download provenance in the DuckDB catalog. Deciding question: standalone dataset → its own card; one of many in a tracked program → recorded under the program card.
+
+Prefer the `e2sa-add-data-source` skill, which walks every step below. Manually:
+
+1. **Use the latest dataset version.** If the archive versions datasets, download and cite the **latest** version; record the exact version DOI and version date.
+2. Create `<project_name>.md` in this folder, named by **project/dataset, not data center** (see the naming convention above), following the existing docs as a template (sections: Role, Access, Summary, Variables, Format, Coverage, Gotchas, Adapter design notes). **Required: the full dataset citation and the landing/download page URL.**
+3. Add a row to the appropriate source table above, and a row to the **Data centers** registry if the hosting data center is new.
+4. If the source needs a new adapter, create `e2sa/data/<source_name>.py` extending `BaseAdapter`.
 

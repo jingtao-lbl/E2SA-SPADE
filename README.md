@@ -13,6 +13,12 @@ harmonizes them into a unified schema with provenance tracking, and
 prepares analysis-ready inputs for downstream modeling and
 machine-learning pipelines.
 
+Give SPADE a research question or topic, and its agents are designed to
+discover and assemble the relevant datasets across multiple data centers
+(ESS-DIVE, the NSF Arctic Data Center, NASA Earthdata, and more), download
+them with full provenance, organize them on disk, and index them for reuse,
+so you start from analysis-ready data instead of assembling it by hand.
+
 Typical use cases include:
 
 - Producing high-resolution ground-ice content maps across Alaska
@@ -129,24 +135,25 @@ SPADE will switch from vendoring to a pip dependency.
 
 ## Data source catalog
 
-SPADE integrates eleven Arctic-data portal adapters, plus project-specific
+SPADE integrates twelve Arctic-data portal adapters, plus project-specific
 sources catalogued under `projects/spade/data/sources/`.
 
-### Eleven portal adapters
+### Twelve portal adapters
 
 | # | Portal | Datasets served (examples) | v0.1.0 status |
 |---|---|---|---|
 | 1 | ESS-DIVE | NGEE-Arctic flux, soil thermal, vegetation, ecohydrology | roadmap |
-| 2 | NSIDC | Brown 2002 ground ice map, CUSP, Olefeldt 2016 thermokarst | roadmap |
-| 3 | AmeriFlux | flux-tower observations | roadmap |
-| 4 | NASA Earthdata | NASA ABoVE, MODIS LST + Snow, SMAP soil moisture + freeze-thaw | shipping (ABoVE), roadmap (MODIS, SMAP) |
-| 5 | Copernicus CDS | ERA5 (deprecated for ELM forcing; retained for other uses) | roadmap |
-| 6 | NCAR RDA | Cheng et al. 2025 RASM-WRF 4 km | roadmap |
-| 7 | NOAA AWS Open Data | HRRR-AK 3 km atmospheric forcing | roadmap |
-| 8 | ASF Vertex | Sentinel-1 SAR/InSAR surface deformation | roadmap |
-| 9 | USGS NWIS | streamflow at Mendenhall, Snow River, Copper River, etc. | roadmap |
-| 10 | NOAA NWLON | tide gauges at Nome, Stebbins, Unalakleet, Valdez, Cordova | roadmap |
-| 11 | PGC | ArcticDEM time-stamped strips | roadmap |
+| 2 | NSF Arctic Data Center | Kanevskiy 2024 cryostratigraphy / ground-ice cores | roadmap |
+| 3 | NSIDC | Brown 2002 ground ice map, CUSP, Olefeldt 2016 thermokarst | roadmap |
+| 4 | AmeriFlux | flux-tower observations | roadmap |
+| 5 | NASA Earthdata | NASA ABoVE, MODIS LST + Snow, SMAP soil moisture + freeze-thaw | shipping (ABoVE), roadmap (MODIS, SMAP) |
+| 6 | Copernicus CDS | ERA5 (deprecated for ELM forcing; retained for other uses) | roadmap |
+| 7 | NCAR RDA | Cheng et al. 2025 RASM-WRF 4 km | roadmap |
+| 8 | NOAA AWS Open Data | HRRR-AK 3 km atmospheric forcing | roadmap |
+| 9 | ASF Vertex | Sentinel-1 SAR/InSAR surface deformation | roadmap |
+| 10 | USGS NWIS | streamflow at Mendenhall, Snow River, Copper River, etc. | roadmap |
+| 11 | NOAA NWLON | tide gauges at Nome, Stebbins, Unalakleet, Valdez, Cordova | roadmap |
+| 12 | PGC | ArcticDEM time-stamped strips | roadmap |
 
 ### Source documentation coverage (v0.1.0)
 
@@ -159,6 +166,7 @@ implementations.
 | CALM Circumpolar Active Layer Monitoring | [calm.md](projects/spade/data/sources/calm.md) | shipping |
 | GTN-P Global Terrestrial Network for Permafrost | [gtnp.md](projects/spade/data/sources/gtnp.md) | shipping |
 | Alaska Permafrost Thaw Database (Webb et al. 2026) | [alaska_thaw_db.md](projects/spade/data/sources/alaska_thaw_db.md) | shipping |
+| Kanevskiy 2024 cryostratigraphy / ground-ice cores (NSF Arctic Data Center) | [kanevskiy_cryostratigraphy.md](projects/spade/data/sources/kanevskiy_cryostratigraphy.md) | roadmap |
 | NASA ABoVE products via ORNL DAAC | [above.md](projects/spade/data/sources/above.md) | shipping |
 | Brown et al. 2002 Circum-Arctic Map of Permafrost and Ground-Ice Conditions | [permafrost_ground_ice_map.md](projects/spade/data/sources/permafrost_ground_ice_map.md) | roadmap |
 | Olefeldt et al. 2016 circumpolar thermokarst map | [thermokarst_circumpolar.md](projects/spade/data/sources/thermokarst_circumpolar.md) | roadmap |
@@ -225,7 +233,8 @@ Software (BSSw).
   local `projects/spade/data/raw/` tree, and the per-source cards under
   `projects/spade/data/sources/` record each dataset's origin, license, and
   fetch instructions, so users retrieve the data themselves under its own
-  terms. SPADE-curated derived products that are cleared for release are
+  terms. **Cite each dataset using its own required citation, recorded in its
+  source card, when you use it.** SPADE-curated derived products that are cleared for release are
   published through ESS-DIVE (DOE BER data repository at LBNL) under
   CC-BY-4.0.
 - **Best practices.** SPADE follows Better Scientific Software practices

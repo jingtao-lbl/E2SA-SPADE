@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0" packageId="urn:uuid:fixture" system="knb">
+  <dataset>
+    <title>Indexer fixture dataset</title>
+    <dataTable>
+      <entityName>Sample_Site_July_2024.csv</entityName>
+      <physical>
+        <dataFormat>
+          <textFormat>
+            <numHeaderLines>4</numHeaderLines>
+            <numFooterLines>15</numFooterLines>
+          </textFormat>
+        </dataFormat>
+      </physical>
+      <attributeList>
+        <attribute>
+          <attributeName>Borehole</attributeName>
+          <attributeDefinition>Borehole identifier</attributeDefinition>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain><textDomain><definition>Any text</definition></textDomain></nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>EIC, %</attributeName>
+          <attributeDefinition>Excess-ice content, % volume</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit><standardUnit>percent</standardUnit></unit>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>VMC, %</attributeName>
+          <attributeDefinition>Volumetric moisture content, % volume</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit><standardUnit>percent</standardUnit></unit>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>GMC, %</attributeName>
+          <attributeDefinition>Gravimetric moisture content, % water</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit><standardUnit>percent</standardUnit></unit>
+            </ratio>
+          </measurementScale>
+        </attribute>
+        <attribute>
+          <attributeName>Notes</attributeName>
+          <attributeDefinition>Free-text notes</attributeDefinition>
+          <measurementScale>
+            <nominal>
+              <nonNumericDomain><textDomain><definition>Any text</definition></textDomain></nonNumericDomain>
+            </nominal>
+          </measurementScale>
+        </attribute>
+      </attributeList>
+    </dataTable>
+    <dataTable>
+      <entityName>Other-Site-June-2024.csv</entityName>
+      <physical>
+        <dataFormat>
+          <textFormat>
+            <numHeaderLines>4</numHeaderLines>
+          </textFormat>
+        </dataFormat>
+      </physical>
+      <attributeList>
+        <attribute>
+          <attributeName>EIC, %</attributeName>
+          <attributeDefinition>Excess-ice content, % volume</attributeDefinition>
+          <measurementScale>
+            <ratio>
+              <unit><standardUnit>percent</standardUnit></unit>
+            </ratio>
+          </measurementScale>
+        </attribute>
+      </attributeList>
+    </dataTable>
+  </dataset>
+</eml:eml>

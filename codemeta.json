@@ -4,8 +4,8 @@
   "identifier": "https://doi.org/10.5281/zenodo.20457346",
   "sameAs": "https://doi.org/10.5281/zenodo.20457346",
   "name": "SPADE: Subsurface Permafrost Autonomous Discovery Engine",
-  "description": "SPADE is an agentic data-preparation and model-simulation-setup agent for coupled surface-subsurface Earth system workflows. SPADE assembles permafrost observations and forcing datasets from CALM, UAF GIPL, GTN-P, the Alaska Permafrost Thaw Database (Webb et al. 2026), CUSP, NASA ABoVE, NGEE-Arctic, and additional Arctic data portals; harmonizes them into a unified pydantic schema with DuckDB provenance; supports site and regional simulation setup for ELM, ATS, ELM-FATES, ELM-MOSART, and related models; and includes a literature-review agent built on Semantic Scholar and paper-search-mcp. The initial source-document catalog focuses on Alaska and the pan-Arctic; SPADE's adapter library, schema, and provenance catalog are designed to transfer to other regions and other coupled surface-subsurface prediction systems.",
-  "version": "0.1.2",
+  "description": "SPADE is an agentic data-preparation and model-simulation-setup agent for coupled surface-subsurface Earth system workflows. SPADE assembles permafrost observations and forcing datasets from CALM, UAF GIPL, GTN-P, the Alaska Permafrost Thaw Database (Webb et al. 2026), CUSP, NASA ABoVE, NGEE-Arctic, the NSF Arctic Data Center, and additional Arctic data portals; harmonizes them into a unified pydantic schema with DuckDB provenance; supports site and regional simulation setup for ELM, ATS, ELM-FATES, ELM-MOSART, and related models; and includes a literature-review agent built on Semantic Scholar and paper-search-mcp. The initial source-document catalog focuses on Alaska and the pan-Arctic; SPADE's adapter library, schema, and provenance catalog are designed to transfer to other regions and other coupled surface-subsurface prediction systems.",
+  "version": "0.2.0",
   "license": "https://spdx.org/licenses/BSD-3-Clause",
   "codeRepository": "https://github.com/jingtao-lbl/E2SA-SPADE",
   "programmingLanguage": [
@@ -41,7 +41,7 @@
     "scientific software",
     "Earth system modeling"
   ],
-  "datePublished": "2026-06-12",
+  "datePublished": "2026-06-18",
   "developmentStatus": "active",
   "funding": "DOE BER NGEE-Arctic project",
   "applicationCategory": "Earth System Science",

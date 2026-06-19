@@ -1,0 +1,46 @@
+{
+  "total": 3,
+  "offset": 0,
+  "data": [
+    {
+      "paperId": "abc123",
+      "externalIds": {"DOI": "10.5194/essd-14-865-2022", "ArXiv": "2202.00001"},
+      "title": "New high-resolution estimates of the permafrost thermal state and hydrothermal conditions for the Northern Hemisphere",
+      "authors": [
+        {"name": "Youhua Ran"},
+        {"name": "Xin Li"},
+        {"name": "Guodong Cheng"}
+      ],
+      "year": 2022,
+      "venue": "Earth System Science Data",
+      "abstract": "We present a high-resolution permafrost dataset for the Northern Hemisphere from 2000 to 2016, including mean annual ground temperature, active layer thickness, and permafrost probability at 1 km resolution.",
+      "citationCount": 87,
+      "url": "https://doi.org/10.5194/essd-14-865-2022"
+    },
+    {
+      "paperId": "def456",
+      "externalIds": {"DOI": "10.5194/essd-2025-557"},
+      "title": "A Comprehensive Database of Thawing Permafrost Locations Across Alaska",
+      "authors": [
+        {"name": "Hailey Webb"},
+        {"name": "Ethan Pierce"}
+      ],
+      "year": 2025,
+      "venue": "Earth System Science Data",
+      "abstract": "We present a database of 19,540 permafrost thaw and thermokarst locations across Alaska, compiled from 44 sources spanning ~70 years.",
+      "citationCount": 5,
+      "url": "https://doi.org/10.5194/essd-2025-557"
+    },
+    {
+      "paperId": "ghi789",
+      "externalIds": {},
+      "title": "Stub paper without DOI",
+      "authors": [{"name": "Anonymous"}],
+      "year": 2024,
+      "venue": "Workshop Proceedings",
+      "abstract": "A short abstract used to test handling of papers without DOIs.",
+      "citationCount": 0,
+      "url": "https://example.invalid/paper"
+    }
+  ]
+}

@@ -40,7 +40,15 @@ class DatasetInfo:
 
 @dataclass
 class FetchResult:
-    """Record of a completed download."""
+    """Record of a completed download.
+
+    For single-file fetches (CALM, GTN-P, Alaska Thaw, the original ABoVE
+    pattern) `local_path` is the file itself and `files` is empty.
+    For whole-package fetches (ESS-DIVE, BagIt packages) `local_path` is
+    the package root directory and `files` lists every downloaded file
+    relative to or under that root. The indexer (`index_package`) walks
+    `files` when it is non-empty, otherwise it walks `local_path`.
+    """
 
     dataset_id: str
     local_path: Path
@@ -48,6 +56,7 @@ class FetchResult:
     access_timestamp: datetime
     content_checksum: str
     source_url: str
+    files: list[Path] = field(default_factory=list)
 
 
 class BaseAdapter(ABC):

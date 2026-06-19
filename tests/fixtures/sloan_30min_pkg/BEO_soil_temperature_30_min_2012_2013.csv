@@ -1,0 +1,12 @@
+region,locale,administrative_area,site,area,polygon_ID,polygon_sub_unit,plot_ID,plot_type,polygon_type,date,time,depth,temperature
+N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,yyyy-mm-dd,hh:mm,cm,deg C
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,19:00,5,7.167
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,19:30,5,7.250
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,19:00,15,3.500
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,19:00,25,-1.200
+North Slope,Barrow,BEO,Intensive Site 1,A,1,edge,A1E,vegetation,low-centered,2012-06-23,19:00,5,6.800
+North Slope,Barrow,BEO,Intensive Site 1,A,1,edge,A1E,vegetation,low-centered,2012-06-23,19:00,15,2.900
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,20:00,5,-9999
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,20:00,15,-9999
+North Slope,Barrow,BEO,Intensive Site 1,X,9,center,X9Z,vegetation,low-centered,2012-06-23,19:00,5,5.000
+North Slope,Barrow,BEO,Intensive Site 1,A,1,center,A1C,vegetation,low-centered,2012-06-23,21:00,5,NotANumber

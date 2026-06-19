@@ -49,6 +49,37 @@ CREATE TABLE IF NOT EXISTS observations (
 CREATE INDEX IF NOT EXISTS idx_obs_variable ON observations(variable);
 CREATE INDEX IF NOT EXISTS idx_obs_latlon ON observations(latitude, longitude);
 CREATE INDEX IF NOT EXISTS idx_obs_dataset ON observations(dataset_id);
+
+CREATE TABLE IF NOT EXISTS package_files (
+    file_id TEXT PRIMARY KEY,
+    dataset_id TEXT NOT NULL,
+    relative_path TEXT NOT NULL,
+    role TEXT,
+    format TEXT,
+    bytes BIGINT,
+    content_checksum TEXT NOT NULL,
+    access_timestamp TIMESTAMP NOT NULL,
+    missing_sentinel TEXT,
+    time_zone TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_pkgfiles_dataset ON package_files(dataset_id);
+CREATE INDEX IF NOT EXISTS idx_pkgfiles_checksum ON package_files(content_checksum);
+
+CREATE TABLE IF NOT EXISTS dataset_variables (
+    dataset_id TEXT NOT NULL,
+    variable TEXT NOT NULL,
+    raw_name TEXT,
+    unit TEXT,
+    file_id TEXT NOT NULL,
+    depth_range TEXT,
+    time_range TEXT,
+    crs_tier TEXT,
+    parseable BOOLEAN,
+    PRIMARY KEY (dataset_id, variable, file_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dsvar_variable ON dataset_variables(variable);
 """
 
 
@@ -113,6 +144,83 @@ def register_download(
             fetch_result.bytes_downloaded,
         ],
     )
+
+
+def register_package_files(
+    conn: duckdb.DuckDBPyConnection,
+    rows: list[dict],
+) -> int:
+    """Bulk-upsert package_files rows. Each dict has keys matching the table columns.
+
+    Required: file_id, dataset_id, relative_path, content_checksum, access_timestamp.
+    Optional: role, format, bytes.
+    Idempotent: re-running with the same rows is a no-op (INSERT OR REPLACE).
+    """
+    if not rows:
+        return 0
+    payload = [
+        (
+            r["file_id"],
+            r["dataset_id"],
+            r["relative_path"],
+            r.get("role"),
+            r.get("format"),
+            r.get("bytes"),
+            r["content_checksum"],
+            r["access_timestamp"],
+            r.get("missing_sentinel"),
+            r.get("time_zone"),
+        )
+        for r in rows
+    ]
+    conn.executemany(
+        """
+        INSERT OR REPLACE INTO package_files
+            (file_id, dataset_id, relative_path, role, format, bytes,
+             content_checksum, access_timestamp, missing_sentinel, time_zone)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        payload,
+    )
+    return len(payload)
+
+
+def register_dataset_variables(
+    conn: duckdb.DuckDBPyConnection,
+    rows: list[dict],
+) -> int:
+    """Bulk-upsert dataset_variables rows. Each dict has keys matching the table columns.
+
+    Required: dataset_id, variable, file_id.
+    Optional: raw_name, unit, depth_range, time_range, crs_tier, parseable.
+    Idempotent: re-running with the same rows is a no-op (INSERT OR REPLACE).
+    """
+    if not rows:
+        return 0
+    payload = [
+        (
+            r["dataset_id"],
+            r["variable"],
+            r.get("raw_name"),
+            r.get("unit"),
+            r["file_id"],
+            r.get("depth_range"),
+            r.get("time_range"),
+            r.get("crs_tier"),
+            r.get("parseable"),
+        )
+        for r in rows
+    ]
+    conn.executemany(
+        """
+        INSERT OR REPLACE INTO dataset_variables
+            (dataset_id, variable, raw_name, unit, file_id, depth_range,
+             time_range, crs_tier, parseable)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        payload,
+    )
+    return len(payload)
 
 
 def ingest_observations(
