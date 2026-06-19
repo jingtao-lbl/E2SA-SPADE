@@ -38,7 +38,7 @@ Typical use cases include:
 
 The initial source-document catalog focuses on Alaska and the pan-Arctic;
 SPADE's adapter library, unified schema, DuckDB provenance catalog, and
-literature-review agent are designed to transfer to other regions, other
+agent pipeline are designed to transfer to other regions, other
 science questions, and other coupled surface-subsurface prediction systems
 with minimal additional plumbing.
 
@@ -190,7 +190,13 @@ forcing-source assignments, reference list, and acceptance criteria
 follow the file. The same catalog template is reusable for other
 regional hazard-modeling efforts.
 
-## Literature review agent
+## Agents
+
+SPADE is designed as a multi-agent pipeline: an orchestrator plus specialist
+agents for literature review, data discovery, retrieval, harmonization,
+quality control, modeling, and reporting.
+
+### Literature-review agent
 
 The `e2sa.agents.litreview` agent searches scientific literature, screens
 results for relevance, verifies DOIs against CrossRef, and ingests into a
