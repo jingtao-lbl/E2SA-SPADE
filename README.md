@@ -210,9 +210,30 @@ template for authoring your own tasks.
 
 ## Agents
 
-SPADE is designed as a multi-agent pipeline: an orchestrator plus specialist
-agents for literature review, data discovery, retrieval, harmonization,
-quality control, and generative model development for permafrost mapping.
+SPADE runs on the E2SA framework's agent pipeline: an orchestrator that
+sequences specialist agents, each one stage of the path from a research question
+to a reported result.
+
+- **Literature review** - search, screen, and verify the relevant literature and
+  dataset references.
+- **Data assembly** - discover, retrieve, organize, harmonize, and
+  quality-control the relevant datasets into an analysis-ready,
+  provenance-tracked catalog.
+- **ML model development** - develop the model from the assembled data (a
+  deterministic baseline, then a physics-constrained generative model with
+  ensemble uncertainty).
+- **Calibration** - calibrate process models (for example ELM-FATES) against the
+  assembled observations, bridging to the A2MC multi-target calibration
+  framework.
+- **Validation** - independently validate the model against held-out data and
+  existing products, and assess uncertainty quality.
+- **Model evolution** - when calibration and validation reveal a structural
+  deficiency, propose a model-code improvement as a verified, human-reviewed
+  pull request.
+- **Report** - generate figures, maps, tables, and a draft findings memo.
+
+The literature-review agent is implemented today; the others define the pipeline
+SPADE is built to run end to end.
 
 It runs in two modes that share one substrate (the DuckDB catalog, the vector
 store, the skills, and the run journal), so discoveries compound across both:
