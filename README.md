@@ -290,11 +290,11 @@ Zenodo. https://doi.org/10.5281/zenodo.20457346
 ```
 
 When reproducibility against a specific code state is required, cite the
-per-version DOI instead. For v0.1.0:
+per-version DOI instead. For v0.2.0:
 
 ```
 Tao, J. (2026). SPADE: Subsurface Permafrost Autonomous Discovery Engine
-(v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.20457347
+(v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.20755471
 ```
 
 A machine-readable citation block is in [CITATION.cff](CITATION.cff).
