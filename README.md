@@ -160,7 +160,7 @@ Each documented source has a card below; the Adapter status column tracks which 
 | NASA ABoVE products via ORNL DAAC | [above.md](projects/spade/data/sources/above.md) | shipping |
 | Brown et al. 2002 Circum-Arctic Map of Permafrost and Ground-Ice Conditions | [permafrost_ground_ice_map.md](projects/spade/data/sources/permafrost_ground_ice_map.md) | roadmap |
 | Olefeldt et al. 2016 circumpolar thermokarst map | [thermokarst_circumpolar.md](projects/spade/data/sources/thermokarst_circumpolar.md) | roadmap |
-| UAF GIPL Permafrost Lab (Tao et al. 2017) | [gipl_uaf_permafrost.md](projects/spade/data/sources/gipl_uaf_permafrost.md) | roadmap (ESS-DIVE deposit pending) |
+| UAF GIPL Permafrost Lab (Romanovsky group) | [gipl_uaf_permafrost.md](projects/spade/data/sources/gipl_uaf_permafrost.md) | borehole MAGT served via `gtnp_magt` (Romanovsky/Kholodov are GTN-P authors); standalone high-frequency multi-depth profiles roadmap (ESS-DIVE deposit pending) |
 | NGEE-Arctic via ESS-DIVE | [ngee_arctic.md](projects/spade/data/sources/ngee_arctic.md) | shipping (Sloan 2014 soil dataset); roadmap (rest) |
 | CommUnity near-Surface Permafrost (CUSP) | [cusp.md](projects/spade/data/sources/cusp.md) | roadmap |
 
@@ -237,5 +237,6 @@ Upstream data sources are credited in the per-source cards under `projects/spade
 This work was supported by the DOE BER NGEE-Arctic project.
 
 ## Contact
-Author: Jing Tao (jingtao@lbl.gov), LBNL
-Co-developer: Josue Hernandez (josuehernandez06@berkeley.edu), University of California, Berkeley
+
+- **Author:** Jing Tao (jingtao@lbl.gov), Lawrence Berkeley National Laboratory
+- **Co-developer:** Josue Hernandez (josuehernandez06@berkeley.edu), University of California, Berkeley

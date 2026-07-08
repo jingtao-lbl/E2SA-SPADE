@@ -8,6 +8,8 @@ Post-processing approach for the 161-Alaska-site curated subset documented in: *
 
 Primary in-situ source for soil temperature profiles and borehole measurements in Alaska. Complements CALM (active layer thickness only) and GTN-P (annual MAGT only) by providing higher-frequency, multi-depth thermal profiles. Many sites also include air temperature, soil moisture (VSM), and snow depth.
 
+**Adapter status.** The borehole mean-annual-ground-temperature (MAGT) subset is already served through the existing `gtnp_magt` adapter (Romanovsky and Kholodov are GTN-P MAGT authors, and many UAF/GIPL boreholes are in the GTN-P product). A standalone GIPL adapter for the higher-frequency, multi-depth profiles is roadmap, pending the ESS-DIVE deposit of the curated 161-site Alaska subset.
+
 
 
 ## Original source
