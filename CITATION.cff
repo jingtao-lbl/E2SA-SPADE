@@ -38,8 +38,8 @@ keywords:
   - scientific software
   - Earth system modeling
 license: BSD-3-Clause
-version: 0.2.0
-date-released: "2026-06-18"
+version: 0.3.0
+date-released: "2026-07-07"
 doi: 10.5281/zenodo.20457346
 identifiers:
   - type: doi

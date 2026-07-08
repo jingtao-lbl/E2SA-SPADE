@@ -49,10 +49,16 @@ _VAR_MAP: dict[str, Variable] = {
     "elevation": Variable.ELEVATION,
     "precipitation": Variable.PRECIPITATION,
     "volumetric_ice_content": Variable.VOLUMETRIC_ICE_CONTENT,
-    "excess_ice_content": Variable.VOLUMETRIC_ICE_CONTENT,
-    "eic": Variable.VOLUMETRIC_ICE_CONTENT,
+    "excess_ice_content": Variable.EXCESS_ICE_CONTENT,  # EIC: distinct from total volumetric ice
+    "eic": Variable.EXCESS_ICE_CONTENT,
     "vmc": Variable.VOLUMETRIC_WATER_CONTENT,  # Kanevskiy "VMC, %" = volumetric moisture
 }
+
+# E2SA-generated metadata bundle + connector-captured native metadata. Skipped by
+# the indexer at the dataset-root only (they describe the data, they are not data).
+_GENERATED_METADATA = frozenset(
+    {"PROVENANCE.json", "CITATION.cff", "README.md", "metadata.txt", "metadata.json"}
+)
 
 _FORMAT_BY_SUFFIX = {
     ".csv": "csv",
@@ -186,6 +192,12 @@ def index_package(
         # these for internal state (e.g., .essdive_package_id) that should not
         # appear in the catalog as a data file.
         if p.name.startswith("."):
+            continue
+        # Skip the E2SA-generated metadata bundle (PROVENANCE.json/CITATION.cff/
+        # README.md) + connector-captured native metadata, but only at the
+        # dataset root where they are written — a dataset's own nested READMEs
+        # (e.g. inside an extracted zip) are still indexed.
+        if p.parent == dataset_dir and p.name in _GENERATED_METADATA:
             continue
         rel = p.relative_to(dataset_dir).as_posix()
         fid = _file_id(dataset_id, rel)
@@ -421,6 +433,31 @@ def _parse_ess_dive_variables(
 _EML_NAME = "science-metadata.xml"
 
 
+def _find_eml(dataset_dir: Path) -> Path | None:
+    """Locate the EML metadata XML within a DataONE BagIt package.
+
+    DataONE BagIt layout varies across archives and across versions of the same
+    dataset. The original Kanevskiy predecessor placed it at
+    ``metadata/science-metadata.xml``; the current version (DOI A2H12V928) ships
+    it at the package root under a title-derived name. Prefer the known path,
+    then fall back to any ``.xml`` whose root is an EML document (root tag ``eml``
+    or containing a ``<dataTable>``). The ``.rdf`` resource map is skipped (not
+    ``.xml``). General lesson: identify by content, not by declared filename.
+    """
+    preferred = dataset_dir / "metadata" / _EML_NAME
+    if preferred.is_file():
+        return preferred
+    for p in sorted(dataset_dir.rglob("*.xml")):
+        try:
+            root = ET.parse(p).getroot()
+        except ET.ParseError:
+            continue
+        tag = root.tag.rsplit("}", 1)[-1]  # strip any namespace
+        if tag == "eml" or root.find(".//dataTable") is not None:
+            return p
+    return None
+
+
 def _read_bagit_manifest(manifest_path: Path) -> dict[str, str]:
     """Return md5 -> relative_path map from a BagIt manifest-md5.txt."""
     out: dict[str, str] = {}
@@ -458,8 +495,8 @@ def _parse_bagit_eml_variables(
     cross-checked against the BagIt manifest for content-based identification.
     Per-file metadata captures any <missingValueCode> declared per dataTable.
     """
-    eml_path = dataset_dir / "metadata" / _EML_NAME
-    if not eml_path.is_file():
+    eml_path = _find_eml(dataset_dir)
+    if eml_path is None:
         return [], {}
 
     # Disk basename -> file_id (the authoritative truth).

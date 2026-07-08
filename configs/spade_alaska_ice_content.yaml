@@ -1,0 +1,28 @@
+# SPADE starter intake template: Alaska ground-ice content.
+# Post the config-trinity merge (docs/design/19 §3.3), the live per-run artifact is
+# `projects/spade/runs/<run_id>/run.yaml` (seeded by `e2sa init`, which folds in the
+# manifest). This file is a starter template a user copies; sources/variables are
+# OPTIONAL (S0 intake / S2 discover() derive them). `project` resolves the on-disk
+# data tree (projects/spade/data/{raw,interim,processed,catalog.duckdb}) per docs/design/17.
+name: spade_alaska_ice_content_v0
+project: spade
+question: "What is the spatial distribution of ground ice content across Alaska at high resolution?"
+sources:
+  - kanevskiy_2024_cryostratigraphy   # excess ice content (primary anchor)
+  - calm_alt                              # active layer thickness
+  - gtnp_magt                              # ground temperature
+  - above_stdm                             # ALT / VWC (STDM)
+  - webb_2026_alaska_thaw_db                    # thaw-event labels
+  - sloan_2014_barrow_soil            # soil temperature (NGEE-Arctic, via ess_dive)
+variables:
+  - excess_ice_content
+  - active_layer_thickness
+  - ground_temperature
+  - soil_temperature
+  - thaw_event_label
+bbox: [-168.0, 54.0, -130.0, 72.0]
+time_range: ["2000-01-01", "2024-12-31"]
+# `model` is intentionally omitted: the modeling stage (S7 / ml_modeldev) chooses it,
+# following the P3 baseline -> P4 generative roadmap. It is not an intake decision.
+# output/interim/processed + catalog derive from `project` (projects/spade/data/...);
+# no root output_dir.

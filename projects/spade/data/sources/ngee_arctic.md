@@ -93,5 +93,12 @@ When the first NGEE-Arctic task lands, list the specific dataset DOIs that were 
 
 | Dataset DOI | Variable | Site | Used by task |
 |---|---|---|---|
+| 10.5440/1121134 | soil temperature, soil moisture, thaw depth | Utqiagvik (Barrow), AK | adapter `sloan_2014_barrow_soil` (ESS-DIVE connector) |
 | 10.15485/<id> | <variable> | <site> | <task_id> |
+
+## Citation (built adapters)
+
+Sloan 2014 Barrow soil (`sloan_2014_barrow_soil` adapter, ESS-DIVE), verbatim from the adapter:
+
+Sloan V; Liebig J; Hahn M; Curtis B; Brooks J; Rogers A; Iversen C; Norby R (2014): Soil temperature, soil moisture and thaw depth, Utqiagvik (Barrow), Alaska, Ver. 1. Next-Generation Ecosystem Experiments (NGEE) Arctic. Dataset. doi:10.5440/1121134
 

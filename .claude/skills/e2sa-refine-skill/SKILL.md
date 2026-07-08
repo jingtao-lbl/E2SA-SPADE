@@ -24,7 +24,7 @@ The "distill → propose → gate → apply" half of skill evolution. The captur
    - **Threshold:** refine on a *repeated* trap (same lesson ≥ ~2-3 times), an explicit human correction, or a clear failure pattern. A single one-off is usually not enough.
 3. **Propose a concrete diff**, not a vague suggestion: the exact new/edited step, gotcha, or trigger wording, with the lesson(s) that justify it cited.
 4. **STOP at the human gate.** Present the proposed diff and the evidence; wait for approval. (The independent reviewer at `.claude/reviewer/` may serve as the gate where configured. Per-skill auto-apply of low-risk edits is a later opt-in, off by default.)
-5. **On approval:** apply the edit, append a dated `## Changelog` line stating what changed and which lesson drove it, commit with a plain message, and write a short dev log if the change is substantive.
+5. **On approval:** apply the edit and append a dated `## Changelog` line stating what changed and which lesson drove it. **If the edit changed the skill's `name:` or its catalog-relevant trigger/summary, update the matching row in the `AGENTS.md` capability catalog to stay in sync.** Then **run `python tools/check_skill_registry.py` (must exit 0)** before committing — it confirms the name↔directory match, the catalog row, and the `## Changelog` are all intact (the same backstop `e2sa-add-skill` step 5 uses). Commit with a plain message; write a short dev log if the change is substantive.
 
 ## Guardrails
 
@@ -37,3 +37,4 @@ The "distill → propose → gate → apply" half of skill evolution. The captur
 ## Changelog
 
 - 2026-06-17: Initial version (per `docs/design/09_skill_evolution.md`).
+- 2026-06-22: Step 5 now requires syncing the `AGENTS.md` catalog row on a name/trigger change and running `tools/check_skill_registry.py` before commit (the registry backstop `e2sa-add-skill` already had; refine could otherwise desync the catalog).

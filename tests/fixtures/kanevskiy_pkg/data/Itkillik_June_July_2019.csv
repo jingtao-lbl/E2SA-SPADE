@@ -1,0 +1,8 @@
+"Cryostratigraphy and ground-ice content, Itkillik River yedoma transect (IRT) and yedoma slope (IRS) boreholes, June-July 2019.  ",,,,,,,,,,
+,,,,,,,,,,
+Borehole ,Date,Coordinates,,"Unit Depth, cm",Cryostratigraphic units / soils,"Sample depth, ","GMC, %","VMC, %","EIC, ",Notes
+,,Latitude,Longitude,,,cm,,,%,
+IRT-11/19,6/30/2019,69.569019,-150.867501,0-57,ALU/P+M silt,,,,,unit row with blank EIC (skipped)
+IRT-11/19,6/30/2019,69.569019,-150.867501,78-88,IL-PD/M+P silt,76-87,116.7,72.2,13.4,real EIC observation
+IRT-11/19,6/30/2019,69.569019,-150.867501,88-112,IW,80,,,0,zero EIC must be kept as real data
+IRT-12/19,7/01/2019,69.570000,-150.868000,40-60,ALF,50,80.0,70.0,5.0,second borehole same file

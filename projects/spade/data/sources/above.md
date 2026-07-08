@@ -255,6 +255,7 @@ For ground ice content mapping and thaw prediction, prioritize in this order:
 
 ### Key papers
 
+- **Schaefer, K., Clayton, L. K., Battaglia, M. J., Bourgeau-Chavez, L. L., Chen, R. H., Chen, A. C., Chen, J., Bakian-Dogaheh, K., Douglas, T. A., Grelick, S. E., Iwahana, G., Jafarov, E., Liu, L., Ludwig, S., Michaelides, R. J., Moghaddam, M., Natali, S., Panda, S. K., Parsekian, A. D., … Zhao, Y.** (2021). ABoVE: Soil Moisture and Active Layer Thickness in Alaska and NWT, Canada, 2008-2020 (Version 1). ORNL Distributed Active Archive Center. https://doi.org/10.3334/ORNLDAAC/1903. Dataset citation for the built `above_stdm` adapter (STDM compilation, DOI 1903), verbatim from the adapter.
 - **Miller, C. E., Griffith, P. C., Goetz, S. J., Hoy, E. E., Pinto, N., McCubbin, I. B., Thorpe, A. K., et al.** (2019). An overview of ABoVE airborne campaign data acquisitions and science opportunities. *Environmental Research Letters* 14(8):080201. doi:10.1088/1748-9326/ab0d44. Project-level overview of ABoVE airborne campaign data; cite for general ABoVE framing.
 - **Virkkala, A.-M., et al.** (2025). ABCFlux v2: Arctic-boreal CO2 and CH4 monthly flux observations and ancillary information across terrestrial and freshwater ecosystems. *Earth System Science Data* preprint essd-2025-585. doi:10.5194/essd-2025-585. Companion paper for the ABCFlux v2 dataset (ORNLDAAC/2448, §3.H above). 1,024 unique sites, 1984-2024, 23,656 flux site-months across terrestrial and freshwater Arctic-boreal ecosystems.
 

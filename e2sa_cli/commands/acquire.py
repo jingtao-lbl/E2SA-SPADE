@@ -19,7 +19,8 @@ from e2sa.orchestrator import acquire
     "--source",
     "source_id",
     required=True,
-    help="Source ID (e.g. ess_dive, calm, gtnp, alaska_thaw_db, above).",
+    help="Source ID / adapter (the dataset_id slug, e.g. calm_alt, gtnp_magt, "
+    "above_stdm, sloan_2014_barrow_soil, kanevskiy_2024_cryostratigraphy).",
 )
 @click.option(
     "--dataset",
@@ -28,19 +29,28 @@ from e2sa.orchestrator import acquire
     help="Dataset ID the adapter knows (e.g. sloan_2014_barrow_soil).",
 )
 @click.option(
+    "--project",
+    "project",
+    default=None,
+    help="Project name; resolves raw-dir + catalog from projects/<project>/data/ "
+    "(e.g. --project spade). Pass this OR --raw-dir.",
+)
+@click.option(
     "--catalog",
     "catalog_path",
     type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
     default=None,
-    help="DuckDB catalog file. Defaults to data/catalog.duckdb.",
+    help="DuckDB catalog file. Overrides the project default; else "
+    "projects/<project>/data/catalog.duckdb or data/catalog.duckdb.",
 )
 @click.option(
     "--raw-dir",
     "raw_dir",
     type=click.Path(file_okay=False, path_type=Path),
-    default=Path("data/raw"),
-    show_default=True,
-    help="Root directory for raw downloads. Adapters write to raw-dir/<source>/<dataset>/.",
+    default=None,
+    help="Top-level raw dir. Overrides --project. Connector-backed adapters write "
+    "to raw-dir/<data_center>/<dataset_id>/; legacy adapters to "
+    "raw-dir/<source_id>/<dataset_id>/. Pass this OR --project.",
 )
 @click.option(
     "--parse",
@@ -51,20 +61,25 @@ from e2sa.orchestrator import acquire
          "Off by default (parse is on-demand per docs/design/04).",
 )
 def acquire_cmd(
-    source_id: str, dataset_id: str, catalog_path: Path | None, raw_dir: Path,
-    parse: bool,
+    source_id: str, dataset_id: str, project: str | None,
+    catalog_path: Path | None, raw_dir: Path | None, parse: bool,
 ) -> None:
     """Fetch a dataset and index it into the catalog end-to-end.
 
     Example:
-        e2sa acquire --source ess_dive --dataset sloan_2014_barrow_soil \\
-            --raw-dir projects/spade/data/raw \\
-            --catalog projects/spade/data/catalog.duckdb
+        e2sa acquire --source sloan_2014_barrow_soil --dataset sloan_2014_barrow_soil \\
+            --project spade
     """
+    if not project and not raw_dir:
+        raise click.UsageError(
+            "pass --project <name> (resolves projects/<name>/data/...) or "
+            "--raw-dir <path>, so the download has a destination."
+        )
     try:
         result = acquire(
             source_id=source_id,
             dataset_id=dataset_id,
+            project=project,
             catalog_path=catalog_path,
             raw_dir=raw_dir,
             parse=parse,
@@ -85,6 +100,10 @@ def acquire_cmd(
     click.echo(f"  package checksum: {result.package_checksum}")
     if result.n_observations_ingested:
         click.echo(f"  observations ingested: {result.n_observations_ingested:,}")
+    if result.qc_findings:
+        click.echo(
+            f"  QC findings: {len(result.qc_findings)} (see log for details)", err=True
+        )
     if result.md5_mismatches:
         n = len(result.md5_mismatches)
         sample = result.md5_mismatches[:3]

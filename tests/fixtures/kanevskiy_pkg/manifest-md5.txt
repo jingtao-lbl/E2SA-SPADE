@@ -1,0 +1,3 @@
+deadbeefdeadbeefdeadbeefdeadbeef  data/Itkillik_June_July_2019.csv
+deadbeefdeadbeefdeadbeefdeadbeef  data/Bylot_July_August_2019.csv
+deadbeefdeadbeefdeadbeefdeadbeef  data/Teshekpuk_Utqiagvik_May_2023.csv

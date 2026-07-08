@@ -15,7 +15,7 @@ Bootstrap entry point for any new E2SA run. Mandatory first step. The workflow g
 
 ## What this skill does
 
-1. Read the run config from arguments (or prompt for `<project>` and `<run_id>`).
+1. Read the run config from arguments (or prompt for `<project>` and `<run_id>`). **`run_id` names the *analysis*, not the data.** It is lowercase snake_case describing the work and unique per run (`alaska_thaw_db_eda`, `ice_content_baseline`, `blocked_cv_v2`) — it is **not** a `dataset_id` slug. A run often spans several datasets, and you will want multiple runs on the same data (an EDA, a baseline, a validation), so name it by purpose with a verb/kind suffix (`_eda`, `_baseline`, `_validation`), never after a single dataset's slug.
 2. Shell out to the CLI: `e2sa init <project> <run_id>`. The CLI does all filesystem work; this skill does not duplicate logic.
 3. Echo the path of the new run subdirectory and the names of the seeded files.
 4. Surface related prior work from `memory/knowledge/` and the cross-workspace index (handled by `e2sa-intake`, not by this skill, but flag the handoff).
@@ -46,3 +46,4 @@ Print the path of the new run subdirectory. Print which template files were seed
 
 ## Changelog
 - 2026-06-17: Adopted the Changelog convention (`docs/design/09_skill_evolution.md`); prior history is in git.
+- 2026-06-23: Documented the `run_id` naming convention in step 1 (run_id = the analysis/purpose, lowercase snake_case with a verb/kind suffix; NOT a `dataset_id` slug). Prompted by keeping `alaska_thaw_db_eda` rather than renaming it to the dataset slug.

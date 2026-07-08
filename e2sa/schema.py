@@ -28,6 +28,7 @@ class Variable(str, Enum):
     SOIL_TEMPERATURE = "soil_temperature"
     GROUND_TEMPERATURE = "ground_temperature"
     VOLUMETRIC_ICE_CONTENT = "volumetric_ice_content"
+    EXCESS_ICE_CONTENT = "excess_ice_content"
     VOLUMETRIC_WATER_CONTENT = "volumetric_water_content"
     THAW_EVENT_LABEL = "thaw_event_label"
     LAND_SURFACE_TEMPERATURE = "land_surface_temperature"
@@ -37,6 +38,52 @@ class Variable(str, Enum):
     SNOW_DEPTH = "snow_depth"
     PRECIPITATION = "precipitation"
     AIR_TEMPERATURE = "air_temperature"
+
+
+#: Canonical unit per measured Variable (UDUNITS / CF-style strings; "1" = a
+#: dimensionless fraction). After harmonization, an Observation.unit MUST equal
+#: CANONICAL_UNITS[variable]; e2sa.harmonize.units enforces and converts to it.
+#: Categorical variables (THAW_EVENT_LABEL) carry no canonical unit and are absent
+#: here on purpose -- callers treat "not in CANONICAL_UNITS" as "no conversion".
+#: The last four are Tier-3 remote-sensing/forcing variables that no current adapter
+#: emits yet; their canonical units were ratified by Jing 2026-06-29 (degC for both
+#: temperatures to match ground/soil; mm/day rate for precipitation; mm cumulative
+#: displacement for surface deformation). See memory/dev_logs/20260629d.
+CANONICAL_UNITS: dict[Variable, str] = {
+    Variable.ACTIVE_LAYER_THICKNESS: "m",
+    Variable.SOIL_TEMPERATURE: "degC",
+    Variable.GROUND_TEMPERATURE: "degC",
+    Variable.VOLUMETRIC_ICE_CONTENT: "1",
+    Variable.EXCESS_ICE_CONTENT: "1",
+    Variable.VOLUMETRIC_WATER_CONTENT: "1",
+    Variable.NDVI: "1",
+    Variable.ELEVATION: "m",
+    Variable.SNOW_DEPTH: "m",
+    Variable.LAND_SURFACE_TEMPERATURE: "degC",
+    Variable.SURFACE_DEFORMATION: "mm",  # cumulative vertical displacement (Jing 2026-06-29)
+    Variable.PRECIPITATION: "mm/day",  # rate (Jing 2026-06-29)
+    Variable.AIR_TEMPERATURE: "degC",
+}
+
+#: Inclusive physical bounds per measured Variable, expressed in CANONICAL_UNITS.
+#: Single source of truth for the QC value-range check (e2sa.qc reads this), so units
+#: and QC thresholds never drift. A value outside the range is reported by QC, never
+#: silently dropped. The last four match their ratified CANONICAL_UNITS (Jing 2026-06-29).
+VALID_RANGE: dict[Variable, tuple[float, float]] = {
+    Variable.ACTIVE_LAYER_THICKNESS: (0.0, 10.0),       # m
+    Variable.SOIL_TEMPERATURE: (-60.0, 40.0),           # degC
+    Variable.GROUND_TEMPERATURE: (-60.0, 40.0),         # degC
+    Variable.VOLUMETRIC_ICE_CONTENT: (0.0, 1.0),        # fraction
+    Variable.EXCESS_ICE_CONTENT: (0.0, 1.0),            # fraction
+    Variable.VOLUMETRIC_WATER_CONTENT: (0.0, 1.0),      # fraction
+    Variable.NDVI: (-1.0, 1.0),                         # dimensionless
+    Variable.ELEVATION: (-500.0, 9000.0),               # m
+    Variable.SNOW_DEPTH: (0.0, 30.0),                   # m
+    Variable.LAND_SURFACE_TEMPERATURE: (-60.0, 50.0),   # degC
+    Variable.SURFACE_DEFORMATION: (-1000.0, 1000.0),    # mm (cumulative, +/-1 m)
+    Variable.PRECIPITATION: (0.0, 2000.0),              # mm/day
+    Variable.AIR_TEMPERATURE: (-70.0, 50.0),            # degC
+}
 
 
 class Provenance(BaseModel):

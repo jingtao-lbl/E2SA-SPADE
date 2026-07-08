@@ -4,27 +4,29 @@ Downloads the PANGAEA 2025 MAGT product (DOI: 10.1594/PANGAEA.972992) and parses
 borehole temperature profiles into Observation records. One row per
 (borehole, depth, year) measurement.
 """
+
 from __future__ import annotations
 
 import csv
-import hashlib
 import io
 from datetime import UTC, datetime
-from pathlib import Path
-from urllib.request import urlopen
 
 from e2sa.data.base import BaseAdapter, DatasetInfo, FetchResult
 from e2sa.schema import Observation, ObservationType, Provenance, Variable
 
 PANGAEA_DOI = "10.1594/PANGAEA.972992"
 PANGAEA_URL = f"https://doi.pangaea.de/{PANGAEA_DOI}?format=textfile"
-DATASET_ID = "gtnp_pangaea_972992"
+DATASET_ID = "gtnp_magt"
 ADAPTER_VERSION = "0.1.0"
 
 
 class GTNPAdapter(BaseAdapter):
-    source_id = "gtnp"
+    source_id = DATASET_ID
     adapter_version = ADAPTER_VERSION
+    data_center = "pangaea"
+    # GROUND_TEMPERATURE is the same physical quantity as SOIL_TEMPERATURE (PI,
+    # 2026-06-22); the registry's VARIABLE_EQUIVALENCE routes the two together.
+    serves = frozenset({Variable.GROUND_TEMPERATURE})
 
     def list_available(self) -> list[DatasetInfo]:
         return [
@@ -41,38 +43,19 @@ class GTNPAdapter(BaseAdapter):
                 format="TSV",
                 url=PANGAEA_URL,
                 license="CC-BY-4.0",
+                citation=(
+                    "Wieczorek, Mareike; GTN-P; Lewkowicz, Antoni G; Kholodov, "
+                    "Alexander L; Romanovsky, Vladimir E; Nicolsky, Dmitry; "
+                    "Streletskiy, Dmitry A; Boike, Julia; Heim, Birgit; Bartsch, "
+                    "Annett; Biskaborn, Boris K; Christiansen, Hanne Hvidtfeldt; "
+                    "Elger, Kirsten; Irrgang, Anna Maria (2025): GTN-P: 41 years of "
+                    "Mean Annual Ground Temperature (MAGT) across latitudinal and "
+                    "elevational gradients in the Northern Hemisphere, v1.0 [dataset]. "
+                    f"PANGAEA, https://doi.org/{PANGAEA_DOI}"
+                ),
+                keywords=["Mean Annual Ground Temperature", "GTN-P", "permafrost"],
             )
         ]
-
-    def fetch(self, dataset_id: str = DATASET_ID) -> FetchResult:
-        out_path = self.raw_dir / "gtnp_pangaea_magt2025.tsv"
-
-        if out_path.exists():
-            checksum = _sha256(out_path)
-            return FetchResult(
-                dataset_id=dataset_id,
-                local_path=out_path,
-                bytes_downloaded=out_path.stat().st_size,
-                access_timestamp=datetime.fromtimestamp(
-                    out_path.stat().st_mtime, tz=UTC
-                ),
-                content_checksum=checksum,
-                source_url=PANGAEA_URL,
-            )
-
-        response = urlopen(PANGAEA_URL)  # noqa: S310
-        raw_bytes = response.read()
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_bytes(raw_bytes)
-
-        return FetchResult(
-            dataset_id=dataset_id,
-            local_path=out_path,
-            bytes_downloaded=len(raw_bytes),
-            access_timestamp=datetime.now(tz=UTC),
-            content_checksum=_sha256(out_path),
-            source_url=PANGAEA_URL,
-        )
 
     def parse_to_schema(
         self,
@@ -127,13 +110,9 @@ class GTNPAdapter(BaseAdapter):
                 or row.get("Frequency (Measurement frequency of orig...)")
                 or ""
             ).strip()
-            provenance_source = (
-                row.get("Provenance/source") or row.get("Source") or ""
-            ).strip()
+            provenance_source = (row.get("Provenance/source") or row.get("Source") or "").strip()
             authors = (
-                row.get("Author(s)")
-                or row.get("Author(s) (Author of original data)")
-                or ""
+                row.get("Author(s)") or row.get("Author(s) (Author of original data)") or ""
             ).strip()
             ref_orig = (
                 row.get("Reference/source")
@@ -149,10 +128,7 @@ class GTNPAdapter(BaseAdapter):
             # station name + precise coords. Live evidence (2026-06-18): the
             # event-only id collapsed 4,088 input rows to 715 catalog rows.
             obs = Observation(
-                obs_id=(
-                    f"gtnp_{event}_{name}_{depth_str}m_{date_str}_"
-                    f"{lat:.4f}_{lon:.4f}"
-                ),
+                obs_id=(f"gtnp_{event}_{name}_{depth_str}m_{date_str}_{lat:.4f}_{lon:.4f}"),
                 obs_type=ObservationType.PROFILE,
                 variable=Variable.GROUND_TEMPERATURE,
                 value=temp_c,
@@ -164,8 +140,8 @@ class GTNPAdapter(BaseAdapter):
                 time_end=dt,
                 qc_flags=[],
                 provenance=Provenance(
-                    source_id="gtnp",
-                    source_url=PANGAEA_URL,
+                    source_id=self.source_id,
+                    source_url=fetch_result.source_url,
                     access_timestamp=fetch_result.access_timestamp,
                     content_checksum=fetch_result.content_checksum,
                     adapter_version=ADAPTER_VERSION,
@@ -211,11 +187,3 @@ def _parse_date(date_str: str) -> datetime | None:
         except ValueError:
             continue
     return None
-
-
-def _sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()

@@ -4,6 +4,12 @@
 
 Bootstrap source 2. Borehole ground temperature profiles providing subsurface thermal state data. Complements CALM's active layer thickness with depth-resolved temperature.
 
+## Citation (required)
+
+Dataset citation (cite when GTN-P MAGT data is used in an analysis; verbatim from the `gtnp_magt` adapter):
+
+Wieczorek, Mareike; GTN-P; Lewkowicz, Antoni G; Kholodov, Alexander L; Romanovsky, Vladimir E; Nicolsky, Dmitry; Streletskiy, Dmitry A; Boike, Julia; Heim, Birgit; Bartsch, Annett; Biskaborn, Boris K; Christiansen, Hanne Hvidtfeldt; Elger, Kirsten; Irrgang, Anna Maria (2025): GTN-P: 41 years of Mean Annual Ground Temperature (MAGT) across latitudinal and elevational gradients in the Northern Hemisphere, v1.0 [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.972992
+
 ## Access
 
 | Method | URL | Format | Priority |
@@ -70,7 +76,7 @@ GTN-P is the international monitoring network for the Permafrost Essential Clima
 - latitude/longitude: decimal degrees, WGS84
 - depth_m: meters below surface (positive downward)
 - time_start/time_end: ISO 8601 date (annual for MAGT, time_end = time_start)
-- provenance.source_id: "gtnp"
+- provenance.source_id: "gtnp_magt"
 - extra: borehole_id, site_name, gtnp_id, permafrost_zone, measurement_frequency, elevation_m
 
 **Recommended ingestion order.**

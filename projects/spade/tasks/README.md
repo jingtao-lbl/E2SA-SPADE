@@ -67,7 +67,7 @@ The task folder stays lightweight (markdown only, gittable). The data deliverabl
 
 | Deliverable kind | Lives under |
 |---|---|
-| Raw downloads from upstream | `projects/spade/data/raw/<source>/` |
+| Raw downloads from upstream | `projects/spade/data/raw/<data_center>/<dataset_id>/` |
 | Reproducible intermediates | `projects/spade/data/interim/<task_id_or_site>/` |
 | Analysis-ready ELM-shape netCDF | `projects/spade/data/processed/sites/<site_slug>/` |
 
@@ -83,7 +83,7 @@ For a worked example, see [`20260521-doe-ecrp-fy26-event-catalog/`](20260521-doe
 ## Relationship to other E2SA pieces
 
 - **Sources docs** at `projects/spade/data/sources/<source>.md` are the canonical "what is this source, how does its adapter work, what are the gotchas" reference. Cite them in `<task_id>.md` when relevant.
-- **Adapters** at `e2sa/data/<source>.py` are where the actual download and parsing happens. Tasks should drive these, not bypass them. If an adapter is missing for a source you need, the task should either request the adapter as a deliverable or note that a new adapter is required.
+- **Adapters** at `e2sa/data/adapters/<dataset_id>.py` (connector-backed, with the data center's fetch in `e2sa/data/connectors/<data_center>.py`) are where the actual download and parsing happens. Tasks should drive these, not bypass them. If an adapter is missing for a source you need, the task should either request the adapter as a deliverable or note that a new adapter is required.
 - **Lessons layer** at `memory/knowledge/lessons/`. Operational quirks the agent hits while running a task get captured here (per `.claude/skills/e2sa-lessons-capture/SKILL.md`) so future tasks against the same source don't re-trip the same wires.
 - **Methods layer** at `memory/knowledge/methods/`. Reusable how-tos that emerge from tasks (e.g. "how to bias-correct ERA5 against AmeriFlux 2 m air temperature") get promoted here.
 - **Runs** at `projects/spade/runs/<run_id>/`. When a task's deliverable becomes the data substrate for a science question, the next step is `e2sa init spade <run_id>` and writing a `RESEARCH_PLAN.md`. Reference the originating task in the plan's data-sources section.

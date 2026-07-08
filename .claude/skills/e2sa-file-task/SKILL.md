@@ -19,7 +19,7 @@ Fire when any of these is true during other work:
 
 Do NOT fire when:
 
-- **The data is already locally available.** Always run a Step 0 inventory check FIRST. SPADE has eight catalogued sources spanning ALT (CALM, ABoVE), ground temperature (GTN-P, GIPL-UAF), ice content (Brown 2002), thaw events (Webb 2025, registered in the catalog), thermokarst (Olefeldt 2016), and the NGEE-Arctic portal on ESS-DIVE (hundreds of datasets at Alaska sites). Check `projects/spade/data/sources/README.md`, `projects/spade/data/raw/`, the registered datasets in `projects/spade/data/catalog.duckdb`, and `~/Desktop/Work/DataObservations/` (via `additional_local_archives.md`) before filing. If covered, cite the existing source doc and skip the fetch. If partially covered, file only for the missing slice.
+- **The data is already locally available.** Always run a Step 0 inventory check FIRST. SPADE has eight catalogued sources spanning ALT (CALM, ABoVE), ground temperature (GTN-P, GIPL-UAF), ice content (Brown 2002), thaw events (Webb 2025, registered in the catalog), thermokarst (Olefeldt 2016), and the NGEE-Arctic portal on ESS-DIVE (hundreds of datasets at Alaska sites). Check `projects/spade/data/sources/README.md`, `projects/spade/data/raw/`, the registered datasets in `projects/spade/data/catalog.duckdb`, and any local archives noted in `additional_local_archives.md` before filing. If covered, cite the existing source doc and skip the fetch. If partially covered, file only for the missing slice.
 - The work is a one-shot adapter call already covered by `BaseAdapter.fetch()`, like the Alaska Thaw DB download. The catalog provenance record is enough; a task adds bureaucracy without adding signal.
 - The agent already has all inputs in memory and can produce the deliverable in a single step with no upstream calls.
 - The human's current ask is genuinely unrelated to site data prep.
@@ -31,7 +31,7 @@ Is this work data preparation for an ELM-FATES site simulation?
   no  -> not this skill; continue current work
   yes -> STEP 0: Is the data already locally available?
            (scan projects/spade/data/sources/README.md,
-            projects/spade/data/raw/, ~/Desktop/Work/DataObservations/)
+            projects/spade/data/raw/, local archives per additional_local_archives.md)
            yes, fully -> USE EXISTING; no fetch, no task; cite source doc
            yes, partial -> drop covered portion, apply rest to missing slice
            no -> STEP 1: Does the missing fetch fit in a single existing-adapter call?

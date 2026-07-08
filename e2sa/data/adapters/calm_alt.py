@@ -3,27 +3,28 @@
 Downloads the PANGAEA ALT dataset (DOI: 10.1594/PANGAEA.972777) and parses
 site-average annual active layer thickness measurements into Observation records.
 """
+
 from __future__ import annotations
 
 import csv
-import hashlib
 import io
 from datetime import UTC, datetime
-from pathlib import Path
-from urllib.request import urlopen
 
 from e2sa.data.base import BaseAdapter, DatasetInfo, FetchResult
+from e2sa.harmonize.units import convert
 from e2sa.schema import Observation, ObservationType, Provenance, Variable
 
 PANGAEA_DOI = "10.1594/PANGAEA.972777"
 PANGAEA_URL = f"https://doi.pangaea.de/{PANGAEA_DOI}?format=textfile"
-DATASET_ID = "calm_pangaea_972777"
+DATASET_ID = "calm_alt"
 ADAPTER_VERSION = "0.1.0"
 
 
 class CALMAdapter(BaseAdapter):
-    source_id = "calm"
+    source_id = DATASET_ID
     adapter_version = ADAPTER_VERSION
+    data_center = "pangaea"
+    serves = frozenset({Variable.ACTIVE_LAYER_THICKNESS})
 
     def list_available(self) -> list[DatasetInfo]:
         return [
@@ -31,47 +32,36 @@ class CALMAdapter(BaseAdapter):
                 dataset_id=DATASET_ID,
                 name="CALM ALT Northern Hemisphere (PANGAEA)",
                 description=(
-                    "Site-average annual active layer thickness, "
-                    "263 time series, 1990-2024"
+                    "Site-average annual active layer thickness, 263 time series, 1990-2024"
                 ),
                 variables=["active_layer_thickness"],
-                spatial_coverage="Northern Hemisphere (filter to US for Alaska)",
+                spatial_coverage=(
+                    "Northern Hemisphere (all stations emitted; scope to a "
+                    "region downstream via RunConfig.bbox)"
+                ),
                 temporal_coverage="1990-2024",
                 format="TSV",
                 url=PANGAEA_URL,
                 license="CC-BY-4.0",
+                citation=(
+                    "Streletskiy, Dmitry A; CALM; GTN-P; Wieczorek, Mareike; Heim, "
+                    "Birgit; Bartsch, Annett (2025): GTN-P CALM: 35 years of Active "
+                    "Layer Thickness (ALT) across latitudinal and elevational "
+                    "gradients in the Northern Hemisphere [dataset]. PANGAEA, "
+                    f"https://doi.org/{PANGAEA_DOI}"
+                ),
+                references=[
+                    "Nelson, F.E., Shiklomanov, N.I., Nyland, K.E. (2021): Cool, "
+                    "CALM, collected: the Circumpolar Active Layer Monitoring "
+                    "program and network. Polar Geography 44(3), 155-166, "
+                    "https://doi.org/10.1080/1088937X.2021.1988001",
+                    "Westermann, S., et al. (2024): ESA Permafrost_cci active layer "
+                    "thickness for the Northern Hemisphere, v4.0 [dataset]. CEDA, "
+                    "https://doi.org/10.5285/D34330CE3F604E368C06D76DE1987CE5",
+                ],
+                keywords=["Active Layer Thickness", "CALM", "GTN-P", "ESA CCI"],
             )
         ]
-
-    def fetch(self, dataset_id: str = DATASET_ID) -> FetchResult:
-        out_path = self.raw_dir / "calm_pangaea.tsv"
-
-        if out_path.exists():
-            checksum = _sha256(out_path)
-            return FetchResult(
-                dataset_id=dataset_id,
-                local_path=out_path,
-                bytes_downloaded=out_path.stat().st_size,
-                access_timestamp=datetime.fromtimestamp(
-                    out_path.stat().st_mtime, tz=UTC
-                ),
-                content_checksum=checksum,
-                source_url=PANGAEA_URL,
-            )
-
-        response = urlopen(PANGAEA_URL)  # noqa: S310
-        raw_bytes = response.read()
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_bytes(raw_bytes)
-
-        return FetchResult(
-            dataset_id=dataset_id,
-            local_path=out_path,
-            bytes_downloaded=len(raw_bytes),
-            access_timestamp=datetime.now(tz=UTC),
-            content_checksum=_sha256(out_path),
-            source_url=PANGAEA_URL,
-        )
 
     def parse_to_schema(self, fetch_result: FetchResult) -> list[Observation]:
         text = fetch_result.local_path.read_text(encoding="utf-8")
@@ -80,14 +70,12 @@ class CALMAdapter(BaseAdapter):
 
         observations: list[Observation] = []
         for row in reader:
-            # Accept both the real PANGAEA value "United States (Alaska)" and
-            # the bare "United States" (used by older PANGAEA exports + the
-            # test fixture). Skip anything else — CALM has many non-US sites
-            # but SPADE only cares about Alaska.
-            country = row.get("Country", "").strip()
-            if not (country.startswith("United States") or "Alaska" in country):
-                continue
-
+            # Faithful adapter: emit ALL stations the source has (CALM is
+            # Northern-Hemisphere-wide), with NO in-adapter geographic filter.
+            # Region scoping (e.g. to Alaska) is applied downstream via
+            # RunConfig.bbox, uniformly across adapters (PI ruling 2026-06-30,
+            # F3/A3; dev logs 20260629b / 20260630*). Do not re-add a country
+            # filter here.
             alt_str = row.get("ALD [cm]", "").strip()
             if not alt_str or alt_str == "-":
                 continue
@@ -118,15 +106,15 @@ class CALMAdapter(BaseAdapter):
             dt = _parse_date(date_str)
 
             qc_flags: list[str] = []
-            if alt_cm >= 150:
+            if alt_cm >= 150:  # physical probe-refusal threshold on the raw cm value
                 qc_flags.append("possible_probe_refusal")
 
             obs = Observation(
                 obs_id=f"calm_{event}_{date_str}",
                 obs_type=ObservationType.POINT,
                 variable=Variable.ACTIVE_LAYER_THICKNESS,
-                value=alt_cm,
-                unit="cm",
+                value=convert(alt_cm, "cm", "m"),  # canonical unit is m (docs/design/06)
+                unit="m",
                 latitude=lat,
                 longitude=lon,
                 depth_m=0.0,
@@ -134,8 +122,8 @@ class CALMAdapter(BaseAdapter):
                 time_end=dt,
                 qc_flags=qc_flags,
                 provenance=Provenance(
-                    source_id="calm",
-                    source_url=PANGAEA_URL,
+                    source_id=self.source_id,
+                    source_url=fetch_result.source_url,
                     access_timestamp=fetch_result.access_timestamp,
                     content_checksum=fetch_result.content_checksum,
                     adapter_version=ADAPTER_VERSION,
@@ -182,11 +170,3 @@ def _parse_date(date_str: str) -> datetime | None:
         except ValueError:
             continue
     return None
-
-
-def _sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()

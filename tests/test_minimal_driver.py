@@ -12,10 +12,11 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from e2sa.data import ess_dive as ess_dive_mod
-from e2sa.data.ess_dive import ESSDIVEAdapter
+from e2sa.data.adapters.sloan_2014_barrow_soil import Sloan2014BarrowSoilAdapter
+from e2sa.data.connectors import ess_dive as ess_dive_mod
 from e2sa.data.registry import ADAPTER_REGISTRY, get_adapter
 from e2sa.orchestrator import AcquireResult, acquire
+from e2sa.qc import Finding
 from e2sa_cli.commands.acquire import acquire_cmd
 
 # ---- registry ----
@@ -24,13 +25,17 @@ from e2sa_cli.commands.acquire import acquire_cmd
 class TestAdapterRegistry:
     def test_all_expected_sources_registered(self) -> None:
         assert set(ADAPTER_REGISTRY) == {
-            "calm", "gtnp", "alaska_thaw_db", "above", "ess_dive",
+            "calm_alt", "gtnp_magt", "webb_2026_alaska_thaw_db", "above_stdm",
+            "sloan_2014_barrow_soil", "kanevskiy_2024_cryostratigraphy",
+            "tsp_north_america_ground_temperature",
         }
 
     def test_get_adapter_returns_instance(self, tmp_path: Path) -> None:
-        adapter = get_adapter("ess_dive", raw_dir=tmp_path)
-        assert isinstance(adapter, ESSDIVEAdapter)
-        assert adapter.raw_dir == tmp_path / "ess_dive"
+        adapter = get_adapter("sloan_2014_barrow_soil", raw_dir=tmp_path)
+        assert isinstance(adapter, Sloan2014BarrowSoilAdapter)
+        # Connector-backed: raw_dir is the top raw dir (no per-source subdir);
+        # the ess_dive connector owns the raw/ess_dive/<dataset_id>/ layout.
+        assert adapter.raw_dir == tmp_path
 
     def test_get_adapter_unknown_raises_with_options(self, tmp_path: Path) -> None:
         with pytest.raises(KeyError, match="Unknown source_id"):
@@ -101,14 +106,14 @@ class TestAcquire:
         catalog = tmp_path / "cat.duckdb"
 
         result = acquire(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
             catalog_path=catalog,
             raw_dir=tmp_path / "raw",
         )
 
         assert isinstance(result, AcquireResult)
-        assert result.source_id == "ess_dive"
+        assert result.source_id == "sloan_2014_barrow_soil"
         assert result.dataset_id == "sloan_2014_barrow_soil"
         assert result.dataset_dir == tmp_path / "raw" / "ess_dive" / "sloan_2014_barrow_soil"
         assert result.n_files_downloaded == 1
@@ -117,6 +122,10 @@ class TestAcquire:
         assert result.package_checksum == "ess-dive-driver-test-pkg-id"
         assert result.md5_mismatches == []
         assert catalog.exists()
+        # acquire() makes the staged folder self-describing (docs/design/18).
+        folder = result.dataset_dir
+        for name in ("PROVENANCE.json", "CITATION.cff", "README.md"):
+            assert (folder / name).exists(), f"missing bundle file {name}"
 
     def test_writes_dataset_row_to_catalog(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -125,7 +134,7 @@ class TestAcquire:
         catalog = tmp_path / "cat.duckdb"
 
         acquire(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
             catalog_path=catalog,
             raw_dir=tmp_path / "raw",
@@ -141,7 +150,7 @@ class TestAcquire:
             ).fetchone()
             assert row is not None
             assert row[0] == "sloan_2014_barrow_soil"
-            assert row[1] == "ess_dive"
+            assert row[1] == "sloan_2014_barrow_soil"
             assert "Barrow" in row[2] or "Utqiagvik" in row[2]
             assert row[3] == "https://doi.org/10.5440/1121134"
             assert row[4] == "0.1.0"
@@ -155,7 +164,7 @@ class TestAcquire:
         catalog = tmp_path / "cat.duckdb"
 
         acquire(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
             catalog_path=catalog,
             raw_dir=tmp_path / "raw",
@@ -181,6 +190,31 @@ class TestAcquire:
                 raw_dir=tmp_path / "raw",
             )
 
+    def test_project_resolves_destination(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # acquire(project=...) resolves raw_dir + catalog from the project tree
+        # (no hand-passed paths). project_paths is patched to a tmp root so the
+        # test does not write into the repo's real projects/spade/.
+        from e2sa import orchestrator
+        from e2sa.config import ProjectPaths
+
+        _patch_ess_dive_http(monkeypatch)
+        data = tmp_path / "projects" / "spade" / "data"
+        pp = ProjectPaths(
+            project="spade", root=tmp_path / "projects" / "spade", data_dir=data,
+            raw_dir=data / "raw", interim_dir=data / "interim",
+            processed_dir=data / "processed", catalog_path=data / "catalog.duckdb",
+        )
+        monkeypatch.setattr(orchestrator, "project_paths", lambda project, **k: pp)
+
+        result = acquire(
+            "sloan_2014_barrow_soil", "sloan_2014_barrow_soil", project="spade"
+        )
+        # data lands at <project>/data/raw/<data_center>/<dataset_id>/
+        assert result.dataset_dir == data / "raw" / "ess_dive" / "sloan_2014_barrow_soil"
+        assert (data / "catalog.duckdb").exists()
+
     def test_parse_true_ingests_observations(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -195,7 +229,7 @@ class TestAcquire:
 
         def fake_parse(self, fetch_result):
             prov = Provenance(
-                source_id="ess_dive",
+                source_id="sloan_2014_barrow_soil",
                 source_url=fetch_result.source_url,
                 access_timestamp=fetch_result.access_timestamp,
                 content_checksum=fetch_result.content_checksum,
@@ -216,10 +250,10 @@ class TestAcquire:
                 ),
             ]
 
-        monkeypatch.setattr(ESSDIVEAdapter, "parse_to_schema", fake_parse)
+        monkeypatch.setattr(Sloan2014BarrowSoilAdapter, "parse_to_schema", fake_parse)
 
         result = acquire(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
             catalog_path=catalog,
             raw_dir=raw,
@@ -239,6 +273,175 @@ class TestAcquire:
         finally:
             conn.close()
 
+    def test_parse_qc_flags_out_of_range_and_still_ingests(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """parse=True QCs the real parse: out-of-range values are logged (the
+        value_range check is error-severity, so it logs at ERROR) but never
+        block -- the data still ingests (outliers are QC's to flag, not the
+        adapter's to drop)."""
+        import logging
+
+        _patch_ess_dive_http(monkeypatch)
+        catalog = tmp_path / "cat.duckdb"
+        raw = tmp_path / "raw"
+
+        from e2sa.schema import Observation, ObservationType, Provenance, Variable
+
+        def fake_parse(self, fetch_result):
+            prov = Provenance(
+                source_id="sloan_2014_barrow_soil",
+                source_url=fetch_result.source_url,
+                access_timestamp=fetch_result.access_timestamp,
+                content_checksum=fetch_result.content_checksum,
+                adapter_version="0.1.0",
+            )
+            # One in-range obs and one absurd value (999 degC, well past the
+            # SOIL_TEMPERATURE [-60, 40] VALID_RANGE) that QC must flag.
+            return [
+                Observation(
+                    obs_id="ok_obs", obs_type=ObservationType.POINT,
+                    variable=Variable.SOIL_TEMPERATURE, value=5.0, unit="degC",
+                    latitude=71.0, longitude=-156.0, depth_m=0.05,
+                    qc_flags=[], provenance=prov,
+                ),
+                Observation(
+                    obs_id="bad_obs", obs_type=ObservationType.POINT,
+                    variable=Variable.SOIL_TEMPERATURE, value=999.0, unit="degC",
+                    latitude=71.0, longitude=-156.0, depth_m=0.15,
+                    qc_flags=[], provenance=prov,
+                ),
+            ]
+
+        monkeypatch.setattr(Sloan2014BarrowSoilAdapter, "parse_to_schema", fake_parse)
+
+        with caplog.at_level(logging.WARNING, logger="e2sa.orchestrator"):
+            result = acquire(
+                source_id="sloan_2014_barrow_soil",
+                dataset_id="sloan_2014_barrow_soil",
+                catalog_path=catalog,
+                raw_dir=raw,
+                parse=True,
+            )
+
+        # Data still ingested despite the QC finding (non-blocking, drops nothing).
+        assert result.n_observations_ingested == 2
+        # The findings are surfaced on the result (for the autonomous driver).
+        assert len(result.qc_findings) >= 1
+        # The out-of-range value produced a value_range QC log naming the dataset.
+        qc_logs = [
+            r for r in caplog.records
+            if "QC" in r.message and "value_range" in r.getMessage()
+        ]
+        assert qc_logs, "expected a value_range QC log for the out-of-range value"
+        assert qc_logs[0].levelno == logging.ERROR  # value_range is error-severity
+        assert any("sloan_2014_barrow_soil" in r.getMessage() for r in qc_logs)
+
+    def test_parse_qc_logs_at_finding_severity(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Each finding logs at its own severity: error-severity -> ERROR,
+        warning-severity -> WARNING. validate_observations is patched to emit
+        one of each so the split is tested independent of which checks happen
+        to be error-severity today (all of them currently are)."""
+        import logging
+
+        from e2sa import orchestrator
+        from e2sa.qc import Finding
+
+        _patch_ess_dive_http(monkeypatch)
+        catalog = tmp_path / "cat.duckdb"
+
+        from e2sa.schema import Observation, ObservationType, Provenance, Variable
+
+        def fake_parse(self, fetch_result):
+            prov = Provenance(
+                source_id="sloan_2014_barrow_soil",
+                source_url=fetch_result.source_url,
+                access_timestamp=fetch_result.access_timestamp,
+                content_checksum=fetch_result.content_checksum,
+                adapter_version="0.1.0",
+            )
+            return [
+                Observation(
+                    obs_id="o1", obs_type=ObservationType.POINT,
+                    variable=Variable.SOIL_TEMPERATURE, value=1.0, unit="degC",
+                    latitude=71.0, longitude=-156.0, depth_m=0.05,
+                    qc_flags=[], provenance=prov,
+                ),
+            ]
+
+        monkeypatch.setattr(Sloan2014BarrowSoilAdapter, "parse_to_schema", fake_parse)
+        monkeypatch.setattr(
+            orchestrator, "validate_observations",
+            lambda serves, observations: [
+                Finding("fake_err", "error", "boom"),
+                Finding("fake_warn", "warning", "meh"),
+            ],
+        )
+
+        with caplog.at_level(logging.WARNING, logger="e2sa.orchestrator"):
+            result = acquire(
+                source_id="sloan_2014_barrow_soil",
+                dataset_id="sloan_2014_barrow_soil",
+                catalog_path=catalog,
+                raw_dir=tmp_path / "raw",
+                parse=True,
+            )
+
+        assert result.n_observations_ingested == 1  # non-blocking
+        # Per-finding lines start with "QC <severity> ["; the roll-up summary
+        # line ("acquire(...): QC found ...") is excluded by the prefix filter.
+        by_check = {r.getMessage().split("[")[1].split("]")[0]: r.levelno
+                    for r in caplog.records if r.msg.startswith("QC %s [")}
+        assert by_check.get("fake_err") == logging.ERROR
+        assert by_check.get("fake_warn") == logging.WARNING
+
+    def test_parse_clean_data_no_qc_logs(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """A clean parse (in-range, depth present, serves honored) emits no QC
+        logs -- the check is quiet when nothing is wrong."""
+        import logging
+
+        _patch_ess_dive_http(monkeypatch)
+        catalog = tmp_path / "cat.duckdb"
+
+        from e2sa.schema import Observation, ObservationType, Provenance, Variable
+
+        def fake_parse(self, fetch_result):
+            prov = Provenance(
+                source_id="sloan_2014_barrow_soil",
+                source_url=fetch_result.source_url,
+                access_timestamp=fetch_result.access_timestamp,
+                content_checksum=fetch_result.content_checksum,
+                adapter_version="0.1.0",
+            )
+            return [
+                Observation(
+                    obs_id="clean_obs", obs_type=ObservationType.POINT,
+                    variable=Variable.SOIL_TEMPERATURE, value=-3.5, unit="degC",
+                    latitude=71.0, longitude=-156.0, depth_m=0.10,
+                    qc_flags=[], provenance=prov,
+                ),
+            ]
+
+        monkeypatch.setattr(Sloan2014BarrowSoilAdapter, "parse_to_schema", fake_parse)
+
+        with caplog.at_level(logging.WARNING, logger="e2sa.orchestrator"):
+            acquire(
+                source_id="sloan_2014_barrow_soil",
+                dataset_id="sloan_2014_barrow_soil",
+                catalog_path=catalog,
+                raw_dir=tmp_path / "raw",
+                parse=True,
+            )
+
+        assert not [r for r in caplog.records if "QC" in r.message]
+
     def test_parse_false_is_default(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -247,7 +450,7 @@ class TestAcquire:
         catalog = tmp_path / "cat.duckdb"
 
         acquire(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
             catalog_path=catalog,
             raw_dir=tmp_path / "raw",
@@ -272,8 +475,9 @@ class TestAcquire:
         catalog = tmp_path / "cat.duckdb"
         raw = tmp_path / "raw"
 
-        acquire("ess_dive", "sloan_2014_barrow_soil", catalog_path=catalog, raw_dir=raw)
-        acquire("ess_dive", "sloan_2014_barrow_soil", catalog_path=catalog, raw_dir=raw)
+        ds = "sloan_2014_barrow_soil"
+        acquire(ds, ds, catalog_path=catalog, raw_dir=raw)
+        acquire(ds, ds, catalog_path=catalog, raw_dir=raw)
 
         from e2sa.catalog import open_catalog
         conn = open_catalog(catalog)
@@ -304,7 +508,7 @@ class TestAcquireCLI:
         the right args through."""
         runner = CliRunner()
         fake_result = AcquireResult(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
             dataset_dir=tmp_path / "raw" / "ess_dive" / "sloan_2014_barrow_soil",
             n_files_downloaded=47,
@@ -319,7 +523,7 @@ class TestAcquireCLI:
             result = runner.invoke(
                 acquire_cmd,
                 [
-                    "--source", "ess_dive",
+                    "--source", "sloan_2014_barrow_soil",
                     "--dataset", "sloan_2014_barrow_soil",
                     "--catalog", str(tmp_path / "cat.duckdb"),
                     "--raw-dir", str(tmp_path / "raw"),
@@ -328,15 +532,76 @@ class TestAcquireCLI:
 
         assert result.exit_code == 0, result.output
         mock_acq.assert_called_once_with(
-            source_id="ess_dive",
+            source_id="sloan_2014_barrow_soil",
             dataset_id="sloan_2014_barrow_soil",
+            project=None,
             catalog_path=tmp_path / "cat.duckdb",
             raw_dir=tmp_path / "raw",
             parse=False,
         )
-        assert "acquired: ess_dive/sloan_2014_barrow_soil" in result.output
+        assert "acquired: sloan_2014_barrow_soil/sloan_2014_barrow_soil" in result.output
         assert "files downloaded: 47" in result.output
         assert "indexed variables: 130" in result.output
+
+    def test_qc_findings_line_in_output(self, tmp_path: Path) -> None:
+        """When a parse produced QC findings, the CLI summary surfaces the count."""
+        runner = CliRunner()
+        fake_result = AcquireResult(
+            source_id="above_stdm", dataset_id="above_stdm",
+            dataset_dir=tmp_path, n_files_downloaded=1, bytes_downloaded=1,
+            n_indexed_files=1, n_indexed_variables=1, package_checksum="x",
+            md5_mismatches=[], n_observations_ingested=100,
+            qc_findings=[
+                Finding("value_range", "error", "out of range"),
+                Finding("subsurface_depth", "warning", "missing depth"),
+                Finding("self_describing", "warning", "no README"),
+            ],
+        )
+        with patch("e2sa_cli.commands.acquire.acquire", return_value=fake_result):
+            result = runner.invoke(
+                acquire_cmd,
+                ["--source", "above_stdm", "--dataset", "above_stdm",
+                 "--catalog", str(tmp_path / "c.duckdb"),
+                 "--raw-dir", str(tmp_path / "raw"), "--parse"],
+            )
+        assert result.exit_code == 0, result.output
+        assert "QC findings: 3" in result.output
+
+    def test_project_flag_forwarded(self, tmp_path: Path) -> None:
+        # --project is forwarded to acquire() (which resolves the paths); raw-dir
+        # + catalog are left None so the project resolution applies.
+        runner = CliRunner()
+        fake = AcquireResult(
+            source_id="sloan_2014_barrow_soil", dataset_id="sloan_2014_barrow_soil",
+            dataset_dir=tmp_path, n_files_downloaded=1, bytes_downloaded=1,
+            n_indexed_files=1, n_indexed_variables=1, package_checksum="x",
+            md5_mismatches=[],
+        )
+        with patch("e2sa_cli.commands.acquire.acquire", return_value=fake) as mock_acq:
+            result = runner.invoke(
+                acquire_cmd,
+                ["--source", "sloan_2014_barrow_soil",
+                 "--dataset", "sloan_2014_barrow_soil", "--project", "spade"],
+            )
+        assert result.exit_code == 0, result.output
+        mock_acq.assert_called_once_with(
+            source_id="sloan_2014_barrow_soil",
+            dataset_id="sloan_2014_barrow_soil",
+            project="spade",
+            catalog_path=None,
+            raw_dir=None,
+            parse=False,
+        )
+
+    def test_requires_project_or_raw_dir(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(
+            acquire_cmd,
+            ["--source", "sloan_2014_barrow_soil", "--dataset", "sloan_2014_barrow_soil"],
+        )
+        assert result.exit_code != 0
+        out = result.output.lower()
+        assert "project" in out and "raw-dir" in out
 
     def test_unknown_source_exit_code_2(self, tmp_path: Path) -> None:
         runner = CliRunner()
@@ -354,16 +619,16 @@ class TestAcquireCLI:
 
     def test_missing_required_args_fails(self) -> None:
         runner = CliRunner()
-        result = runner.invoke(acquire_cmd, ["--source", "ess_dive"])
+        result = runner.invoke(acquire_cmd, ["--source", "sloan_2014_barrow_soil"])
         assert result.exit_code != 0
         assert "Missing option" in result.output or "required" in result.output.lower()
 
     def test_md5_mismatch_warning_in_output(self, tmp_path: Path) -> None:
         runner = CliRunner()
         fake_result = AcquireResult(
-            source_id="kanevskiy_cryostratigraphy",
-            dataset_id="kanevskiy_v2024",
-            dataset_dir=tmp_path / "raw" / "kanevskiy",
+            source_id="kanevskiy_2024_cryostratigraphy",
+            dataset_id="kanevskiy_2024_cryostratigraphy",
+            dataset_dir=tmp_path / "raw" / "kanevskiy_2024_cryostratigraphy",
             n_files_downloaded=10,
             bytes_downloaded=1024,
             n_indexed_files=10,
@@ -376,8 +641,8 @@ class TestAcquireCLI:
             result = runner.invoke(
                 acquire_cmd,
                 [
-                    "--source", "ess_dive",
-                    "--dataset", "kanevskiy_v2024",
+                    "--source", "kanevskiy_2024_cryostratigraphy",
+                    "--dataset", "kanevskiy_2024_cryostratigraphy",
                     "--catalog", str(tmp_path / "cat.duckdb"),
                     "--raw-dir", str(tmp_path / "raw"),
                 ],
@@ -385,3 +650,44 @@ class TestAcquireCLI:
 
         assert result.exit_code == 0
         assert "md5 mismatch" in result.output
+
+
+class TestAcquireQc:
+    """V1 (docs/design/19): acquire() attaches QC findings (advisory, non-fatal)."""
+
+    def test_qc_findings_attached_and_warned(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog
+    ) -> None:
+        _patch_ess_dive_http(monkeypatch)
+        # Inject a staged-folder finding so the wiring is exercised deterministically,
+        # independent of the fake package's actual contents.
+        import e2sa.orchestrator as orch
+
+        monkeypatch.setattr(
+            orch,
+            "validate_staged_folder",
+            lambda folder: [Finding("test_check", "warning", "injected", {})],
+        )
+
+        with caplog.at_level("WARNING"):
+            result = acquire(
+                source_id="sloan_2014_barrow_soil",
+                dataset_id="sloan_2014_barrow_soil",
+                catalog_path=tmp_path / "cat.duckdb",
+                raw_dir=tmp_path / "raw",
+            )
+
+        assert [f.check for f in result.qc_findings] == ["test_check"]
+        assert "QC found" in caplog.text
+
+    def test_clean_acquire_has_list_findings(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        _patch_ess_dive_http(monkeypatch)
+        result = acquire(
+            source_id="sloan_2014_barrow_soil",
+            dataset_id="sloan_2014_barrow_soil",
+            catalog_path=tmp_path / "cat.duckdb",
+            raw_dir=tmp_path / "raw",
+        )
+        assert isinstance(result.qc_findings, list)

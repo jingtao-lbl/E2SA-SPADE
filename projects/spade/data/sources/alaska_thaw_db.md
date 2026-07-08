@@ -1,5 +1,9 @@
 # Alaska Permafrost Thaw Database
 
+## Citation (required)
+
+Dataset citation (cite when this database is used in an analysis; matches the `webb_2026_alaska_thaw_db` adapter):
+
 **Webb, H., Pierce, E., Abbott, B. W., Bowden, W. B., Chen, Yaping, Chen, Yating, Douglas, T. A., Eklof, J. F., Euskirchen, E. S., Langer, M., Myers-Smith, I. H., Overeem, I., Strauss, J., Walter Anthony, K., Wang, K., Whitley, M. A., and Turetsky, M. R.** (2026). A comprehensive database of thawing permafrost locations across Alaska: version 2.0.0. *Earth System Science Data* 18:3147. doi:10.5194/essd-18-3147-2026. https://essd.copernicus.org/articles/18/3147/2026/
 
 ## Role in SPADE
@@ -100,7 +104,7 @@ First live test of the adapter against the real Zenodo endpoint.
 | Field | Value |
 |---|---|
 | URL | `https://zenodo.org/records/17494851/files/ArcticWebb/Alaska_Permafrost_Thaw_Database-v2.0.0.zip?download=1` |
-| Local path | `projects/spade/data/raw/alaska_thaw_db/alaska_thaw_db_v2.zip` |
+| Local path | `projects/spade/data/raw/zenodo/webb_2026_alaska_thaw_db/webb_2026_alaska_thaw_db.zip` (Option C layout; pre-rename path was `raw/alaska_thaw_db/alaska_thaw_db_v2.zip`) |
 | Size | 3,968,134 bytes (3.97 MB) |
 | SHA256 | `04629e01301c17c7cece88ce9979cc8d44f3ccd88157a40a8586f27e264d5159` |
 | Parsed observations | 19,540 (exact match with source doc) |

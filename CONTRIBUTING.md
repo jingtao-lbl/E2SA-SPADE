@@ -53,7 +53,7 @@ The full list is in `CLAUDE.md` under "Rules when coding." The essentials:
   validated with `pandera` at module boundaries.
 - Public functions get a short docstring: input contract, output contract, side
   effects. No decorative comments.
-- One adapter module per data source under `e2sa/data/`. The adapter interface
+- One adapter module per data source under `e2sa/data/adapters/` (per-data-center connectors under `e2sa/data/connectors/`). The adapter interface
   (`list_available`, `fetch`, `parse_to_schema`) is fixed; add functionality
   inside the adapter, not in callers.
 - Every adapter has a unit test against a tiny fixture in `tests/fixtures/`.

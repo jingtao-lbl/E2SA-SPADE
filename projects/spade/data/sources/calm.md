@@ -6,6 +6,16 @@ Pan-Arctic curated-subset evaluation reference: **Tao, J., Riley, W. J., and Zhu
 
 Bootstrap source 1. Primary in-situ active layer thickness (ALT) observations across Alaska. Long time series (1991-present) at standardized grid sites.
 
+## Citation (required)
+
+Dataset citation (cite when CALM ALT data is used in an analysis; verbatim from the `calm_alt` adapter). Not to be confused with the Tao et al. (2024) evaluation reference at the top of this card:
+
+Streletskiy, Dmitry A; CALM; GTN-P; Wieczorek, Mareike; Heim, Birgit; Bartsch, Annett (2025): GTN-P CALM: 35 years of Active Layer Thickness (ALT) across latitudinal and elevational gradients in the Northern Hemisphere [dataset]. PANGAEA, https://doi.org/10.1594/PANGAEA.972777
+
+Program references (from the adapter):
+- Nelson, F.E., Shiklomanov, N.I., Nyland, K.E. (2021): Cool, CALM, collected: the Circumpolar Active Layer Monitoring program and network. Polar Geography 44(3), 155-166, https://doi.org/10.1080/1088937X.2021.1988001
+- Westermann, S., et al. (2024): ESA Permafrost_cci active layer thickness for the Northern Hemisphere, v4.0 [dataset]. CEDA, https://doi.org/10.5285/D34330CE3F604E368C06D76DE1987CE5
+
 
 ## Access
 
@@ -78,7 +88,7 @@ Methods are not directly comparable for trend analysis. Probing grids yield spat
 - latitude/longitude: decimal degrees, WGS84
 - depth_m: 0.0 (surface measurement)
 - time_start/time_end: DATE/TIME from PANGAEA (single annual measurement, time_end = time_start)
-- provenance.source_id: "calm"
+- provenance.source_id: "calm_alt"
 - extra: site_code, site_name, gtnp_id, measurement_method, grid_size_m
 
 **Fetch strategy.** Single download from PANGAEA. File is small (~1 MB for 22K records). Compute sha256 checksum. No pagination needed.

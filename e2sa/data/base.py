@@ -4,7 +4,8 @@ Every data source (CALM, GTN-P, Alaska Thaw DB, ABoVE, etc.) implements
 a concrete subclass of BaseAdapter. The interface has three methods:
 
     list_available  - discover what datasets/variables the source offers
-    fetch           - download raw data to data/raw/<source>/
+    fetch           - download raw data (connector-backed: into
+                      data/raw/<data_center>/<dataset_id>/)
     parse_to_schema - convert raw files into Observation records
 
 Adapters are the extension point for adding new data sources. The rest
@@ -17,9 +18,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
-from e2sa.schema import Observation
+from e2sa.schema import Observation, Variable
 
 
 @dataclass
@@ -29,12 +30,24 @@ class DatasetInfo:
     dataset_id: str
     name: str
     description: str
+    #: The variables the SOURCE dataset CONTAINS (descriptive; written to the staged
+    #: metadata bundle). This is NOT the emit-contract: what an adapter actually parses
+    #: into Observations is its class-level `serves`, which is the only thing the
+    #: capability index / matcher reads. The two can differ on purpose, e.g. a dataset
+    #: that contains soil temperature + VWC + thaw depth but whose adapter serves only
+    #: soil temperature today (the gap is the "extend this adapter" backlog signal).
     variables: list[str]
     spatial_coverage: str
     temporal_coverage: str
     format: str
     url: str | None = None
     license: str | None = None
+    #: Full scholarly citation (the form the source requires). Feeds the staged
+    #: PROVENANCE.json + CITATION.cff so each dataset folder is self-describing.
+    citation: str | None = None
+    #: Related works / references the source lists (DOIs or full citations).
+    references: list[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -69,9 +82,30 @@ class BaseAdapter(ABC):
     source_id: str
     adapter_version: str
 
+    #: Coarse routing declaration: the Variables this adapter can emit. Read at
+    #: import by the capability index in registry.py (Variable -> source_id) so a
+    #: research question can find this source without instantiating the adapter or
+    #: hitting an API. MUST be a subset of what parse_to_schema actually emits
+    #: (enforced by tests). Empty default = not yet declared (invisible to
+    #: discovery). See docs/design/14.
+    serves: ClassVar[frozenset[Variable]] = frozenset()
+
+    #: The data center this adapter's data comes from (the connector that owns
+    #: auth + search + fetch). When set, the adapter's `fetch` delegates to that
+    #: connector (Option C, docs/design/15-16). None = legacy self-contained
+    #: adapter that does its own fetch. Additive: existing adapters keep working.
+    data_center: ClassVar[str | None] = None
+
     def __init__(self, raw_dir: Path = Path("data/raw")) -> None:
-        self.raw_dir = raw_dir / self.source_id
-        self.raw_dir.mkdir(parents=True, exist_ok=True)
+        if self.data_center is not None:
+            # Connector-backed (Option C): the connector owns the on-disk layout
+            # (raw_dir/<data_center>/<dataset_id>/). Keep the top-level raw dir;
+            # the per-source folder is neither used nor created here.
+            self.raw_dir = raw_dir
+        else:
+            # Legacy/standalone adapter that fetches into raw_dir/<source_id>/.
+            self.raw_dir = raw_dir / self.source_id
+            self.raw_dir.mkdir(parents=True, exist_ok=True)
 
     @abstractmethod
     def list_available(self) -> list[DatasetInfo]:
@@ -81,14 +115,24 @@ class BaseAdapter(ABC):
         a hardcoded list), not download full data files.
         """
 
-    @abstractmethod
     def fetch(self, dataset_id: str) -> FetchResult:
-        """Download the specified dataset to self.raw_dir.
+        """Download the dataset and return a FetchResult.
 
-        Must be idempotent: if the file already exists on disk with a
-        matching checksum, skip the download and return the existing
-        FetchResult. Must record access_timestamp and content_checksum.
+        Default (connector-backed, Option C): delegate to the adapter's
+        `data_center` connector, which owns auth + download + idempotency and
+        writes `raw_dir/<data_center>/<dataset_id>/`. A legacy/standalone adapter
+        (no `data_center`) must override this with its own fetch.
         """
+        if self.data_center is None:
+            raise NotImplementedError(
+                f"{type(self).__name__} sets no `data_center`; override fetch() "
+                f"or set `data_center` to a registered connector."
+            )
+        # Lazy import: base.py must not import connector.py at module load
+        # (connector.py imports base.py -> circular).
+        from e2sa.data.connector import get_connector
+
+        return get_connector(self.data_center, self.raw_dir).fetch(dataset_id)
 
     @abstractmethod
     def parse_to_schema(self, fetch_result: FetchResult) -> list[Observation]:

@@ -3,15 +3,13 @@
 Downloads the Webb et al. (2025) thaw database from Zenodo (19,540 labeled
 thaw locations across Alaska) and parses into Observation records.
 """
+
 from __future__ import annotations
 
 import csv
-import hashlib
 import io
 import zipfile
-from datetime import datetime, timezone
 from pathlib import Path
-from urllib.request import urlopen
 
 from e2sa.data.base import BaseAdapter, DatasetInfo, FetchResult
 from e2sa.schema import Observation, ObservationType, Provenance, Variable
@@ -20,7 +18,7 @@ ZENODO_URL = (
     "https://zenodo.org/records/17494851/files/"
     "ArcticWebb/Alaska_Permafrost_Thaw_Database-v2.0.0.zip?download=1"
 )
-DATASET_ID = "alaska_thaw_db_v2"
+DATASET_ID = "webb_2026_alaska_thaw_db"
 ADAPTER_VERSION = "0.1.0"
 
 FEATURE_CATEGORIES = [
@@ -37,8 +35,10 @@ FEATURE_CATEGORIES = [
 
 
 class AlaskaThawDBAdapter(BaseAdapter):
-    source_id = "alaska_thaw_db"
+    source_id = DATASET_ID
     adapter_version = ADAPTER_VERSION
+    data_center = "zenodo"
+    serves = frozenset({Variable.THAW_EVENT_LABEL})
 
     def list_available(self) -> list[DatasetInfo]:
         return [
@@ -55,38 +55,18 @@ class AlaskaThawDBAdapter(BaseAdapter):
                 format="CSV (inside ZIP with GeoJSON and GeoPackage)",
                 url=ZENODO_URL,
                 license="CC-BY-4.0",
+                citation=(
+                    "Webb, H., Pierce, E., Abbott, B. W., Bowden, W. B., Chen, "
+                    "Yaping, Chen, Yating, Douglas, T. A., Eklof, J. F., Euskirchen, "
+                    "E. S., Langer, M., Myers-Smith, I. H., Overeem, I., Strauss, J., "
+                    "Walter Anthony, K., Wang, K., Whitley, M. A., and Turetsky, "
+                    "M. R. (2026). A comprehensive database of thawing permafrost "
+                    "locations across Alaska: version 2.0.0. Earth System Science "
+                    "Data 18:3147. https://doi.org/10.5194/essd-18-3147-2026"
+                ),
+                keywords=["thaw", "permafrost", "Alaska", "thermokarst"],
             )
         ]
-
-    def fetch(self, dataset_id: str = DATASET_ID) -> FetchResult:
-        zip_path = self.raw_dir / "alaska_thaw_db_v2.zip"
-
-        if zip_path.exists():
-            checksum = _sha256(zip_path)
-            return FetchResult(
-                dataset_id=dataset_id,
-                local_path=zip_path,
-                bytes_downloaded=zip_path.stat().st_size,
-                access_timestamp=datetime.fromtimestamp(
-                    zip_path.stat().st_mtime, tz=timezone.utc
-                ),
-                content_checksum=checksum,
-                source_url=ZENODO_URL,
-            )
-
-        response = urlopen(ZENODO_URL)  # noqa: S310
-        raw_bytes = response.read()
-        zip_path.parent.mkdir(parents=True, exist_ok=True)
-        zip_path.write_bytes(raw_bytes)
-
-        return FetchResult(
-            dataset_id=dataset_id,
-            local_path=zip_path,
-            bytes_downloaded=len(raw_bytes),
-            access_timestamp=datetime.now(tz=timezone.utc),
-            content_checksum=_sha256(zip_path),
-            source_url=ZENODO_URL,
-        )
 
     def parse_to_schema(self, fetch_result: FetchResult) -> list[Observation]:
         csv_text = _extract_csv_from_zip(fetch_result.local_path)
@@ -123,8 +103,8 @@ class AlaskaThawDBAdapter(BaseAdapter):
                 time_end=None,
                 qc_flags=[],
                 provenance=Provenance(
-                    source_id="alaska_thaw_db",
-                    source_url=ZENODO_URL,
+                    source_id=self.source_id,
+                    source_url=fetch_result.source_url,
                     access_timestamp=fetch_result.access_timestamp,
                     content_checksum=fetch_result.content_checksum,
                     adapter_version=ADAPTER_VERSION,
@@ -166,9 +146,7 @@ def _extract_csv_from_zip(zip_path: Path) -> str:
     with zipfile.ZipFile(zip_path) as zf:
         candidates = [n for n in zf.namelist() if n.endswith(MAIN_CSV_SUFFIX)]
         if not candidates:
-            raise FileNotFoundError(
-                f"No file matching '*{MAIN_CSV_SUFFIX}' in {zip_path}"
-            )
+            raise FileNotFoundError(f"No file matching '*{MAIN_CSV_SUFFIX}' in {zip_path}")
         if len(candidates) > 1:
             raise RuntimeError(
                 f"Multiple matches for '*{MAIN_CSV_SUFFIX}' in {zip_path}: {candidates}"
@@ -178,11 +156,3 @@ def _extract_csv_from_zip(zip_path: Path) -> str:
             return raw.decode("utf-8")
         except UnicodeDecodeError:
             return raw.decode("cp1252")
-
-
-def _sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()

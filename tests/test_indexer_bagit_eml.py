@@ -15,7 +15,8 @@ from e2sa.data.indexing import detect_standard, index_package
 FIXTURE_PKG = Path(__file__).parent / "fixtures" / "indexer_bagit_pkg"
 REAL_KANEVSKIY = (
     Path(__file__).resolve().parents[1]
-    / "projects" / "spade" / "data" / "raw" / "kanevskiy_cryostratigraphy"
+    / "projects" / "spade" / "data" / "raw"
+    / "arctic_data_center" / "kanevskiy_2024_cryostratigraphy"
 )
 
 
@@ -23,7 +24,7 @@ def _seed(conn, dataset_id: str = "kanevskiy_test") -> None:
     register_dataset(
         conn,
         dataset_id=dataset_id,
-        source_id="kanevskiy_cryostratigraphy",
+        source_id="kanevskiy_2024_cryostratigraphy",
         name="Kanevskiy cryostratigraphy (fixture)",
         adapter_version="0.0.0",
         schema_version="0.1.0",
@@ -70,10 +71,10 @@ def test_eml_attributes_mapped_to_enum(tmp_path: Path) -> None:
     ).fetchall()
     by_var = {r[0]: r for r in rows}
 
-    assert by_var["volumetric_ice_content"][1].startswith("EIC")
-    assert by_var["volumetric_ice_content"][2] == "percent"
-    assert by_var["volumetric_ice_content"][3] is True
-    assert by_var["volumetric_ice_content"][4] == "assumed-wgs84"
+    assert by_var["excess_ice_content"][1].startswith("EIC")
+    assert by_var["excess_ice_content"][2] == "percent"
+    assert by_var["excess_ice_content"][3] is True
+    assert by_var["excess_ice_content"][4] == "assumed-wgs84"
 
     assert by_var["volumetric_water_content"][1].startswith("VMC")
     assert by_var["volumetric_water_content"][3] is True
@@ -86,7 +87,8 @@ def test_eml_attributes_mapped_to_enum(tmp_path: Path) -> None:
 
 
 def test_eml_fuzzy_filename_match(tmp_path: Path) -> None:
-    """EML's 'Other-Site-June-2024.csv' (hyphens) matches disk 'Other_Site_June_2024.csv' (underscores)."""
+    """EML 'Other-Site-June-2024.csv' (hyphens) matches disk
+    'Other_Site_June_2024.csv' (underscores)."""
     conn = open_catalog(tmp_path / "cat.duckdb")
     _seed(conn)
     index_package(conn, "kanevskiy_test", FIXTURE_PKG)
@@ -98,7 +100,7 @@ def test_eml_fuzzy_filename_match(tmp_path: Path) -> None:
     eic_for_other = conn.execute(
         """
         SELECT COUNT(*) FROM dataset_variables
-        WHERE variable = 'volumetric_ice_content' AND file_id = ?
+        WHERE variable = 'excess_ice_content' AND file_id = ?
         """,
         [other_file_id],
     ).fetchone()[0]
@@ -158,12 +160,12 @@ def test_real_kanevskiy_md5_integrity_clean(tmp_path: Path) -> None:
     conn = open_catalog(tmp_path / "cat.duckdb")
     register_dataset(
         conn,
-        dataset_id="kanevskiy_cryostratigraphy",
-        source_id="kanevskiy_cryostratigraphy",
+        dataset_id="kanevskiy_2024_cryostratigraphy",
+        source_id="kanevskiy_2024_cryostratigraphy",
         adapter_version="0.0.0",
         schema_version="0.1.0",
     )
-    result = index_package(conn, "kanevskiy_cryostratigraphy", REAL_KANEVSKIY)
+    result = index_package(conn, "kanevskiy_2024_cryostratigraphy", REAL_KANEVSKIY)
     assert result.md5_mismatches == [], (
         f"md5 mismatches in real Kanevskiy download: {result.md5_mismatches}"
     )
@@ -179,19 +181,19 @@ def test_index_package_against_real_kanevskiy(tmp_path: Path) -> None:
     conn = open_catalog(tmp_path / "cat.duckdb")
     register_dataset(
         conn,
-        dataset_id="kanevskiy_cryostratigraphy",
-        source_id="kanevskiy_cryostratigraphy",
+        dataset_id="kanevskiy_2024_cryostratigraphy",
+        source_id="kanevskiy_2024_cryostratigraphy",
         name="Kanevskiy 2024 (real download)",
         adapter_version="0.0.0",
         schema_version="0.1.0",
     )
-    result = index_package(conn, "kanevskiy_cryostratigraphy", REAL_KANEVSKIY)
+    result = index_package(conn, "kanevskiy_2024_cryostratigraphy", REAL_KANEVSKIY)
 
     assert result.standard == "dataone_bagit"
     assert result.n_files >= 40  # 22 CSV + 22 PDF + BagIt files + EML/sysmeta
 
     eic_hits = conn.execute(
-        "SELECT COUNT(*) FROM dataset_variables WHERE variable = 'volumetric_ice_content'"
+        "SELECT COUNT(*) FROM dataset_variables WHERE variable = 'excess_ice_content'"
     ).fetchone()[0]
     assert eic_hits >= 10  # 22 dataTables, most carry EIC, %
 

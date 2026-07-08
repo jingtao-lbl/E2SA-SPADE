@@ -1,7 +1,7 @@
 """Phase 0 smoke test. Confirms the core modules import and initialize."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from e2sa import __version__
@@ -25,7 +25,7 @@ def test_observation_roundtrip() -> None:
     prov = Provenance(
         source_id="calm",
         source_url="https://example.invalid/calm",
-        access_timestamp=datetime(2026, 4, 11, tzinfo=timezone.utc),
+        access_timestamp=datetime(2026, 4, 11, tzinfo=UTC),
         content_checksum="deadbeef",
         license="CC-BY-4.0",
         adapter_version="0.0.1",

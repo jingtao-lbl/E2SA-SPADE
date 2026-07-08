@@ -15,7 +15,7 @@ When this dataset is used in an analysis, the citation above is the **current-ve
 
 ## Role in SPADE
 
-**Direct field-measurement labels for excess-ice content (EIC), the primary anchor variable of the ice-content product** (per `projects/spade/design/01_ice_content_mapping_research_plan.md`). Sparse but high-quality: 22 sampling campaigns 2018-2023 at 8 Alaska sites (plus 2 Canadian sites that must be filtered out for Alaska-only training). Each campaign carries per-borehole EIC, GMC, VMC, and cryostratigraphic-unit assignments tied to a depth range; several files also carry electrical conductivity. Field methods (SIPRE corer, frozen-then-oven-dried weights per Shur et al. 2021 Methods S1) make these direct measurements rather than inferences from a proxy.
+**Direct field-measurement labels for excess-ice content (EIC), the primary anchor variable of the ice-content product** (per `projects/spade/design/01_ice_content_mapping.md`). Sparse but high-quality: 22 sampling campaigns 2018-2023 at 8 Alaska sites (plus 2 Canadian sites that must be filtered out for Alaska-only training). Each campaign carries per-borehole EIC, GMC, VMC, and cryostratigraphic-unit assignments tied to a depth range; several files also carry electrical conductivity. Field methods (SIPRE corer, frozen-then-oven-dried weights per Shur et al. 2021 Methods S1) make these direct measurements rather than inferences from a proxy.
 
 This dataset is one of the **few primary EIC sources** SPADE has located. ESS-DIVE search returned no comparable primary holdings; NSIDC offers cartographic interpretations (Ferrians 1965) and active-layer products, not ice-content cores. Discovery was paper-first (Google Scholar → publication → ADC landing).
 
@@ -218,14 +218,14 @@ Whether the 2025-08-08 current version fixes this is unconfirmed; verify after r
 
 | Field | Value |
 |---|---|
-| Path | `projects/spade/data/raw/kanevskiy_cryostratigraphy/` (gitignored) |
-| Folder naming | Source-named per `CLAUDE.md` §9 (renamed from `raw/arctic_data_center/kanevskiy_ground_ice_2024/` on 2026-06-17) |
-| Version on disk | **Predecessor** (`10.18739/A2QR4NS3D`, uploaded 2024-02-23) |
-| Bagging date | 2026-06-15 |
-| Payload size | ~59 MB (61,603,730 bytes, 44 files per `Payload-Oxum`) |
-| BagIt integrity | Verifiable: `cd projects/spade/data/raw/kanevskiy_cryostratigraphy && md5sum -c manifest-md5.txt` |
+| Path | `projects/spade/data/raw/arctic_data_center/kanevskiy_2024_cryostratigraphy/` (gitignored) |
+| Folder naming | Option C layout `raw/<data_center>/<dataset_id>/` per `CLAUDE.md` §9 (data center `arctic_data_center`, slug `kanevskiy_2024_cryostratigraphy`; set 2026-06-23 with the connector refactor) |
+| Version on disk | **Current** (`10.18739/A2H12V928`, uploaded 2025-08-08) |
+| How fetched | Automated, via the `arctic_data_center` connector (`e2sa.data.connectors.arctic_data_center`), 2026-06-23. DataONE `packages` BagIt-zip download, no auth. |
+| Payload | ~62 MB (61,947,840 bytes, 51 files: 22 CSV + 22 PDF + EML + resource-map RDF + BagIt tag files) |
+| BagIt integrity | Verified by the indexer (0 MD5 mismatches). Manual: `cd projects/spade/data/raw/arctic_data_center/kanevskiy_2024_cryostratigraphy && md5sum -c manifest-md5.txt` |
 
-**Recommended action before adapter work:** re-download the current version (`10.18739/A2H12V928`) into the same folder, replacing the predecessor copy. The current version structure is the same so all inspection findings still apply, but the cited DOI in provenance must be the current one.
+**EML layout note (current version).** Unlike the predecessor (`metadata/science-metadata.xml`), the current-version BagIt places the EML at the package root as `Cryostratigraphy_and_ground_ice_content_of_the_upp.xml`, with data under `data/`. The indexer's `_find_eml` handles both layouts (identify EML by content, not declared path).
 
 ---
 

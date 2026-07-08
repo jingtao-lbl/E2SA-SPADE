@@ -8,11 +8,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-from e2sa.data.above import ABoVEAdapter
-from e2sa.data.alaska_thaw_db import AlaskaThawDBAdapter
+from e2sa.data.adapters.above_stdm import ABoVEAdapter
+from e2sa.data.adapters.calm_alt import CALMAdapter
+from e2sa.data.adapters.gtnp_magt import GTNPAdapter
+from e2sa.data.adapters.webb_2026_alaska_thaw_db import AlaskaThawDBAdapter
 from e2sa.data.base import FetchResult
-from e2sa.data.calm import CALMAdapter
-from e2sa.data.gtnp import GTNPAdapter
 from e2sa.schema import ObservationType, Variable
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -42,13 +42,19 @@ def _fetch_result(fixture_path: Path) -> FetchResult:
 
 
 class TestCALMAdapter:
-    def test_parse_filters_to_us_only(self) -> None:
+    def test_parse_emits_all_countries_faithfully(self) -> None:
+        # Faithful adapter (PI ruling 2026-06-30, F3/A3): emits ALL stations the
+        # source has, with NO in-adapter geographic filter; region scoping is
+        # downstream via RunConfig.bbox. The fixture carries a Russia/Yamal pair
+        # alongside the Alaska rows, which must now appear.
         adapter = CALMAdapter(raw_dir=Path("/tmp/test_calm"))
         fr = _fetch_result(FIXTURES / "calm_sample.tsv")
         obs = adapter.parse_to_schema(fr)
-        countries = {o.extra.get("area_locality", "") for o in obs}
-        assert all("Alaska" in area for area in countries if area)
-        assert len(obs) > 0
+        areas = {o.extra.get("area_locality", "") for o in obs}
+        assert any("Yamal" in area for area in areas)  # non-US row now emitted
+        assert any("Alaska" in area for area in areas)  # US rows still emitted
+        # 6 valid Alaska rows + 2 valid Russia rows; U1_2022 dropped (ALD '-').
+        assert len(obs) == 8
 
     def test_parse_skips_missing_data(self) -> None:
         adapter = CALMAdapter(raw_dir=Path("/tmp/test_calm"))
@@ -61,7 +67,7 @@ class TestCALMAdapter:
         adapter = CALMAdapter(raw_dir=Path("/tmp/test_calm"))
         fr = _fetch_result(FIXTURES / "calm_sample.tsv")
         obs = adapter.parse_to_schema(fr)
-        kougarok_160 = [o for o in obs if o.value == 160.0]
+        kougarok_160 = [o for o in obs if o.value == 1.6]  # 160 cm -> 1.6 m (canonical)
         assert len(kougarok_160) == 1
         assert "possible_probe_refusal" in kougarok_160[0].qc_flags
 
@@ -72,10 +78,10 @@ class TestCALMAdapter:
         for o in obs:
             assert o.obs_type == ObservationType.POINT
             assert o.variable == Variable.ACTIVE_LAYER_THICKNESS
-            assert o.unit == "cm"
+            assert o.unit == "m"
             assert -90 <= o.latitude <= 90
             assert -180 <= o.longitude <= 180
-            assert o.provenance.source_id == "calm"
+            assert o.provenance.source_id == "calm_alt"
 
 
 # --- GTN-P ---
@@ -162,7 +168,7 @@ class TestAlaskaThawDBAdapter:
         for o in obs:
             assert o.obs_type == ObservationType.EVENT
             assert o.variable == Variable.THAW_EVENT_LABEL
-            assert o.provenance.source_id == "alaska_thaw_db"
+            assert o.provenance.source_id == "webb_2026_alaska_thaw_db"
             assert o.extra.get("feature_category")
 
     def test_per_record_provenance_fields(self, tmp_path: Path) -> None:
@@ -178,7 +184,7 @@ def _parse_csv_directly(adapter: AlaskaThawDBAdapter, fr: FetchResult) -> list:
     import csv
     import io
 
-    from e2sa.data.alaska_thaw_db import ADAPTER_VERSION, FEATURE_CATEGORIES
+    from e2sa.data.adapters.webb_2026_alaska_thaw_db import ADAPTER_VERSION, FEATURE_CATEGORIES
     from e2sa.schema import Observation, ObservationType, Provenance, Variable
 
     text = fr.local_path.read_text(encoding="utf-8")
@@ -212,7 +218,7 @@ def _parse_csv_directly(adapter: AlaskaThawDBAdapter, fr: FetchResult) -> list:
             time_end=None,
             qc_flags=[],
             provenance=Provenance(
-                source_id="alaska_thaw_db",
+                source_id="webb_2026_alaska_thaw_db",
                 source_url="https://test.invalid",
                 access_timestamp=fr.access_timestamp,
                 content_checksum=fr.content_checksum,
@@ -253,10 +259,12 @@ class TestABoVEAdapter:
         obs = adapter.parse_to_schema(fr)
         assert len(obs) > 0
 
-    def test_maps_multiple_variables(self, tmp_path: Path) -> None:
+    def test_maps_alt_and_vwc_not_soil_temperature(self, tmp_path: Path) -> None:
+        # DOI 10.3334/ORNLDAAC/1903 measures ALT + soil moisture only; it has NO
+        # soil temperature. The adapter must emit exactly ALT + VWC.
         adapter = ABoVEAdapter(raw_dir=tmp_path)
         fr = FetchResult(
-            dataset_id="above_stdm_1903",
+            dataset_id="above_stdm",
             local_path=FIXTURES / "above_stdm_sample.csv",
             bytes_downloaded=100,
             access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
@@ -266,10 +274,76 @@ class TestABoVEAdapter:
         obs = adapter.parse_to_schema(fr)
         variables = {o.variable for o in obs}
         assert Variable.ACTIVE_LAYER_THICKNESS in variables
-        assert Variable.SOIL_TEMPERATURE in variables
+        assert Variable.VOLUMETRIC_WATER_CONTENT in variables
+        assert Variable.SOIL_TEMPERATURE not in variables
+
+    def test_vwc_carries_interval_depth_alt_does_not(self, tmp_path: Path) -> None:
+        # VWC depth = midpoint of depth_top/depth_bottom (cm -> m); ALT has no depth.
+        adapter = ABoVEAdapter(raw_dir=tmp_path)
+        fr = FetchResult(
+            dataset_id="above_stdm",
+            local_path=FIXTURES / "above_stdm_sample.csv",
+            bytes_downloaded=100,
+            access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
+            content_checksum="fixture",
+            source_url="https://test.invalid",
+        )
+        obs = adapter.parse_to_schema(fr)
+        vwc = [o for o in obs if o.variable == Variable.VOLUMETRIC_WATER_CONTENT]
+        alt = [o for o in obs if o.variable == Variable.ACTIVE_LAYER_THICKNESS]
+        assert vwc and all(o.depth_m is not None for o in vwc)
+        # fixture intervals (10,20)->0.15 m and (5,15)->0.10 m
+        assert {round(o.depth_m, 3) for o in vwc} == {0.15, 0.10}
+        assert alt and all(o.depth_m is None for o in alt)
+
+    def test_canonical_units_vwc_fraction_alt_meters(self, tmp_path: Path) -> None:
+        # The source reports VWC in percent and ALT in cm; the adapter must emit the
+        # canonical fraction ("1") and meters. The fixture mirrors the real percent
+        # convention (the old fixture used fraction-style VWC and hid the VWC bug).
+        adapter = ABoVEAdapter(raw_dir=tmp_path)
+        fr = FetchResult(
+            dataset_id="above_stdm",
+            local_path=FIXTURES / "above_stdm_sample.csv",
+            bytes_downloaded=100,
+            access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
+            content_checksum="fixture",
+            source_url="https://test.invalid",
+        )
+        obs = adapter.parse_to_schema(fr)
+        vwc = [o for o in obs if o.variable == Variable.VOLUMETRIC_WATER_CONTENT]
+        alt = [o for o in obs if o.variable == Variable.ACTIVE_LAYER_THICKNESS]
+        assert vwc and all(o.unit == "1" for o in vwc)
+        assert alt and all(o.unit == "m" for o in alt)
+        # percent -> fraction: 45% -> 0.45, 38% -> 0.38 land in [0, 1]
+        assert sorted(round(o.value, 4) for o in vwc if o.value <= 1.0) == [0.38, 0.45]
+        # the 142% sensor error survives as 1.42 (>1): the adapter does NOT pre-filter
+        # it; flagging out-of-range values is QC's job (docs/design/19 V1).
+        assert any(o.value > 1.0 for o in vwc)
+        # ALT cm -> m: 38.5 cm -> 0.385 m
+        assert any(round(o.value, 4) == 0.385 for o in alt)
+
+    def test_drops_minus_999_sentinel(self, tmp_path: Path) -> None:
+        # Most rows carry -999 for the variable they do not measure; those must be
+        # dropped, not ingested as data, and must not yield negative depths.
+        adapter = ABoVEAdapter(raw_dir=tmp_path)
+        fr = FetchResult(
+            dataset_id="above_stdm",
+            local_path=FIXTURES / "above_stdm_sample.csv",
+            bytes_downloaded=100,
+            access_timestamp=datetime(2026, 4, 12, tzinfo=UTC),
+            content_checksum="fixture",
+            source_url="https://test.invalid",
+        )
+        obs = adapter.parse_to_schema(fr)
+        assert obs
+        assert all(o.value >= 0 for o in obs)  # no -999 value ingested
+        assert all(o.depth_m is None or o.depth_m >= 0 for o in obs)  # no negative depth
+        n_alt = sum(o.variable == Variable.ACTIVE_LAYER_THICKNESS for o in obs)
+        n_vwc = sum(o.variable == Variable.VOLUMETRIC_WATER_CONTENT for o in obs)
+        assert (n_alt, n_vwc) == (5, 3)  # 5 ALT + 3 VWC (incl. the 142% outlier) survive; -999 dropped
 
     def test_list_available_returns_registry(self, tmp_path: Path) -> None:
         adapter = ABoVEAdapter(raw_dir=tmp_path)
         datasets = adapter.list_available()
         assert len(datasets) >= 1
-        assert datasets[0].dataset_id == "above_stdm_1903"
+        assert datasets[0].dataset_id == "above_stdm"

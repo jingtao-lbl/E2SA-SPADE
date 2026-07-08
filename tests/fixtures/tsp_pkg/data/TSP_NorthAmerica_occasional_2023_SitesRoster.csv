@@ -1,0 +1,5 @@
+SiteCountry,SiteCode,SiteCodeHistorical,GTNP_ID,SiteName,SiteEquipment,Depth,Latitude,Longitude,Elevation,SiteVegetation,ObservationDate,Filename
+US,US_BRW_101,BR1,US48,Barrow 1,HOBO U12-015,45,71.3106,-156.6543,5,Tundra,07/27/23,US_BRW_101_2023_07_27.csv
+US,US_BRW_102,BR2,US49,Barrow 2,HOBO U12-015,48,71.309,-156.6615,5,Tundra,07/27/23,US_BRW_201_2023_07_27.csv
+US,US_XXX_001,XX,,No Data File,HOBO,10,65.0,-147.0,100,Forest,06/01/23,US_XXX_001_2023_06_01.csv
+US,US_CPT_101,CPT,US60,College Peat,HOBO U12-015,69,64.8678,-147.7849,137,Black Spruce,10/03/23,US_CPT_101_2023_10_03.csv

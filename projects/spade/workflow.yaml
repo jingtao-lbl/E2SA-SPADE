@@ -1,0 +1,50 @@
+# SPADE project workflow template (docs/design/19 §3.2).
+# Declares which E2SA subagents this project runs, in what order (a DAG via
+# depends_on), with which human checkpoint and machine validators per stage.
+# The generic orchestrator reads this + a run's intake (run.yaml) and executes it.
+# Note: `checkpoint` values are quoted strings — bare `off` is YAML boolean false.
+project: spade
+description: "Alaska ground-ice content mapping via a physics-constrained generative model."
+stages:
+  - id: litreview
+    agent: litreview
+    stage_code: S1
+    depends_on: []
+    checkpoint: "off"
+    validators: [stage_contract]
+
+  - id: data_assembly
+    agent: data_assembly
+    stage_code: S2-S6
+    depends_on: [litreview]
+    checkpoint: source_selection
+    validators: [stage_contract, data_quality, provenance_complete, credential_preflight]
+
+  - id: ml_modeldev
+    agent: ml_modeldev
+    stage_code: S7
+    depends_on: [data_assembly]
+    checkpoint: "off"
+    validators: [stage_contract]
+
+  # calibration is intentionally OMITTED for SPADE (the "different projects,
+  # different subagents" point: SPADE develops a generative model, not a
+  # process-model calibration). A calibration project would include it here.
+
+  - id: validation
+    agent: validation
+    stage_code: S8
+    depends_on: [ml_modeldev]
+    checkpoint: "off"
+    validators: [stage_contract]
+
+  - id: report
+    agent: report
+    stage_code: S9
+    depends_on: [validation]
+    checkpoint: final_report
+    validators: [run_structural]
+
+defaults:
+  autonomy: gated      # gated | auto (sets all checkpoints; docs/design/07 §5.2)
+  review: always       # the independent ReviewAgent always runs (docs/design/07 §3.5)

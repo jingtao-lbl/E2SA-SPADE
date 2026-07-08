@@ -10,6 +10,10 @@ import click
 from e2sa_cli.config import load_user
 
 RUN_YAML_TEMPLATE = """\
+# The single machine-read run artifact: manifest + intake (docs/design/19 §3.3).
+# Read by the orchestrator (online) / interactive agent (offline) + `e2sa validate`.
+
+# --- manifest (identity / status) ---
 project: {project}
 run_id: {run_id}
 created: {created}
@@ -19,6 +23,16 @@ author:
 status: scoped
 e2sa_version: {e2sa_version}
 schema_version: {schema_version}
+
+# --- intake (the WHAT) ---
+# `question` is required before this run executes. `sources` and `variables` are
+# OPTIONAL: S0 intake derives variables from the question, S2 discover() derives
+# sources, and both are written back here. An expert may pin them instead.
+question: ""
+sources: []
+variables: []
+# bbox: [west, south, east, north]        # optional
+# time_range: ["YYYY-MM-DD", "YYYY-MM-DD"] # optional
 """
 
 RESEARCH_PLAN_TEMPLATE = """\
@@ -148,9 +162,7 @@ def init(project: str, run_id: str, root: Path, force: bool) -> None:
     (run_dir / "RESEARCH_PLAN.md").write_text(
         RESEARCH_PLAN_TEMPLATE.format(project=project, run_id=run_id)
     )
-    (run_dir / "REPORT.md").write_text(
-        REPORT_TEMPLATE.format(project=project, run_id=run_id)
-    )
+    (run_dir / "REPORT.md").write_text(REPORT_TEMPLATE.format(project=project, run_id=run_id))
 
     click.echo(f"created: {run_dir}")
     click.echo("seeded:")
