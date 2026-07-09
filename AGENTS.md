@@ -8,7 +8,7 @@
 
 ## What E2SA is
 
-E2SA ("End-to-End Science Agent") is a domain-agnostic framework for building agentic science pipelines. A single orchestrator takes a research question through literature RAG, data discovery, retrieval, harmonization, QC, feature engineering, modeling, evaluation, and reporting. Each science use case is a concrete **project** built on the framework. Projects live under `projects/<project>/` and reuse the shared orchestrator, catalog, retrieval, harmonization, QC, evaluation, and reporting layers, supplying only the truly domain-specific pieces (adapters, schema extensions, model heads, domain priors).
+E2SA ("End-to-End Science Agent") is a framework for building agentic science pipelines across broad Earth science. A single orchestrator takes a research question through literature RAG, data discovery, retrieval, harmonization, QC, feature engineering, modeling, evaluation, and reporting. Each science use case is a concrete **project** built on the framework. Projects live under `projects/<project>/` and reuse the shared orchestrator, catalog, retrieval, harmonization, QC, evaluation, and reporting layers, supplying only the truly domain-specific pieces (adapters, schema extensions, model heads, domain priors).
 
 The first project is **SPADE** (Subsurface Permafrost Autonomous Discovery Engine). This contract is written at the **framework** level — it governs your work on E2SA itself and on any project. For per-project science context, read that project's `projects/<project>/CLAUDE.md` (and `projects/<project>/AGENTS.md` if present).
 
@@ -37,7 +37,7 @@ Framework- and project-agnostic. Follow them on every task.
 3. **Raw data is immutable.** Never edit `data/raw/` (or a project's `raw/`). Every transformation must be reproducible from raw. Cleaned and analysis-ready artifacts are derived, never hand-edited.
 4. **Inference is not observation.** Model predictions are labeled as inference, never presented as measured data. Keep data, model inference, and interpretation visibly separate in code, figures, and prose.
 5. **No hallucinated datasets — ever.** A claimed dataset, source, or value is a critical failure unless backed by a verifiable retrieval hit. The vector store holds only extracted text with its source. Never invent references or numbers.
-6. **Framework stays domain-agnostic; projects hold the specifics.** Code under `e2sa/` must not hardcode a project's sites, variables, paths, or domain assumptions. Domain-specific content lives under `projects/<project>/`. One adapter module per data source under `e2sa/data/adapters/` (per-data-center connectors under `e2sa/data/connectors/`), with the fixed interface.
+6. **Framework stays project-agnostic; projects hold the specifics.** Code under `e2sa/` must not hardcode a project's sites, variables, paths, or domain assumptions. Domain-specific content lives under `projects/<project>/`. One adapter module per data source under `e2sa/data/adapters/` (per-data-center connectors under `e2sa/data/connectors/`), with the fixed interface.
 7. **Start every run through `e2sa_start`.** A new run must be bootstrapped into `projects/<project>/runs/<run_id>/` with the canonical skeleton before analysis begins. The workflow guard refuses to advance past S0 Intake until it has. A human asking for analysis directly does not get to skip it.
 8. **Read before you write.** Before adding code, read the exports, immediate callers, and shared utilities you will touch. Verify folder and file names by listing or reading — never guess directory names. Match existing conventions even where you would choose differently.
 9. **Surgical changes.** Touch only what the task needs. Do not refactor, reformat, or "improve" adjacent code. Minimum code that solves the problem; nothing speculative.
@@ -104,7 +104,7 @@ During development the orchestrator checkpoints — and you, the interactive age
 - Never assert a dataset, parameter, or mechanism without checking the source of truth (rules 1–2, 5).
 - Raw data is immutable; transforms reproduce from raw (rule 3).
 - Predictions are inference, not observation (rule 4).
-- Framework code stays domain-agnostic; project specifics live under `projects/<project>/` (rule 6).
+- Framework code stays project-agnostic; project specifics live under `projects/<project>/` (rule 6).
 - No AI attribution in commits (rule 10).
 - Public-facing artifacts may carry a normal funding acknowledgment of an awarded grant (funder, office, project, or award number). Keep them otherwise project-agnostic — do not name internal program labels, pending or unawarded proposals, or strategic codenames in anything that ships to a public mirror.
 

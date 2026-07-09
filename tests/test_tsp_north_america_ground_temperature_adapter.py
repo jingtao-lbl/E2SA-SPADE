@@ -10,6 +10,7 @@ the real source units (degC + metres) and the real BagIt shape.
 from __future__ import annotations
 
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -22,7 +23,7 @@ from e2sa.data.adapters.tsp_north_america_ground_temperature import (
     _parse_date,
     dataset_id_for_year,
 )
-from e2sa.data.base import BaseAdapter
+from e2sa.data.base import BaseAdapter, FetchResult
 from e2sa.data.registry import ADAPTER_REGISTRY, sources_for_variables
 from e2sa.qc.checks import validate_observations
 from e2sa.schema import CANONICAL_UNITS, ObservationType, Variable
@@ -187,6 +188,62 @@ class TestParseToSchema:
         )
         errors = [f for f in findings if f.severity == "error"]
         assert errors == [], f"QC errors: {[(f.code, f.detail) for f in errors]}"
+
+
+class TestParse2016BoreholeRoster:
+    """The 2016 package ships the older 'Borehole' roster schema: SiteCode_New /
+    Filename_StartDate columns (not SiteCode / Filename), the date hyphenated with
+    no .csv suffix, and same-region sites (US_BRW_101 vs US_BRW_201). Regression for
+    the '2016 parsed to zero observations' bug (SiteCodeHistorical was grabbed, so
+    no site mapped to its file)."""
+
+    def _build(self, tmp_path: Path) -> Path:
+        pkg = tmp_path / "raw" / "arctic_data_center" / dataset_id_for_year(2016)
+        data = pkg / "data"
+        data.mkdir(parents=True)
+        roster = (
+            "Status,SiteCountry,SiteCodeHistorical,SiteCode_New,Filename_StartDate,"
+            "SiteName,Latitude,Longitude,GTNP_ID\n"
+            "active,US,BR1,US_BRW_101,US_BRW_101_2016_08-09,Barrow 1,71.31,-156.65,US48\n"
+            "active,US,BR2,US_BRW_201,US_BRW_201_2016_08-09,Barrow 2,71.31,-156.66,US49\n"
+        )
+        (data / "_TSP_Roster_NorthAmerica_Borehole_2016.csv").write_text(roster)
+        # lowercase Temperature_c header (2016 variant) + hyphen->underscore date file
+        (data / "US_BRW_101_2016_08_09.csv").write_text(
+            "Depth_m,Temperature_c\n12,-6.5\n20,-5.0\n")
+        (data / "US_BRW_201_2016_08_09.csv").write_text(
+            "Depth_m,Temperature_c\n12,-7.1\n20,-6.0\n")
+        return pkg
+
+    def _obs(self, tmp_path: Path):
+        pkg = self._build(tmp_path)
+        fr = FetchResult(
+            dataset_id=dataset_id_for_year(2016), local_path=pkg, bytes_downloaded=0,
+            access_timestamp=datetime(2026, 7, 7, tzinfo=UTC), content_checksum="local",
+            source_url=f"https://doi.org/{YEAR_DOI[2016]}", files=[],
+        )
+        adapter = TSPNorthAmericaGroundTemperatureAdapter(raw_dir=pkg.parent)
+        return adapter.parse_to_schema(fr)
+
+    def test_both_same_region_sites_recovered(self, tmp_path: Path) -> None:
+        obs = self._obs(tmp_path)
+        assert len(obs) == 4  # 2 sites x 2 depths
+        assert {o.extra["site_code"] for o in obs} == {"US_BRW_101", "US_BRW_201"}
+
+    def test_full_site_code_disambiguates_files(self, tmp_path: Path) -> None:
+        obs = self._obs(tmp_path)
+        by_site = {o.extra["site_code"]: o.extra["source_file"] for o in obs}
+        assert by_site["US_BRW_101"] == "US_BRW_101_2016_08_09.csv"
+        assert by_site["US_BRW_201"] == "US_BRW_201_2016_08_09.csv"
+
+    def test_date_and_temp_parsed_from_2016_variant(self, tmp_path: Path) -> None:
+        obs = self._obs(tmp_path)
+        assert all("20160809" in o.obs_id for o in obs)
+        assert any(o.value == pytest.approx(-6.5) for o in obs)  # lowercase _c header
+        findings = validate_observations(
+            TSPNorthAmericaGroundTemperatureAdapter.serves, obs
+        )
+        assert [f for f in findings if f.severity == "error"] == []
 
 
 class TestParseHelpers:

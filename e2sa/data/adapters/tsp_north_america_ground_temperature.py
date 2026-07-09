@@ -221,21 +221,41 @@ def _resolve_borehole_file(data_dir: Path, site: dict[str, str]) -> Path | None:
     prefix (`US_<region>`) + the acquisition date, accepting only an unambiguous
     single match (the BagIt "match by content, not declared name" gotcha).
     """
-    exact = data_dir / site["filename"]
-    if exact.is_file():
-        return exact
-    m = _FILENAME_DATE_RE.search(site["filename"])
+    fname = site["filename"]
+    # 1. Exact on-disk name (roster Filename is usually authoritative).
+    if (data_dir / fname).is_file():
+        return data_dir / fname
+    # 2. Normalized name: the 2016 "Borehole" roster writes the date hyphenated and
+    #    drops the .csv suffix (US_BLK_001_2016_08-16 vs ..._08_16.csv).
+    norm = fname.replace("-", "_")
+    if not norm.lower().endswith(".csv"):
+        norm += ".csv"
+    if (data_dir / norm).is_file():
+        return data_dir / norm
+
+    def _nonroster(paths: object) -> list[Path]:
+        return [p for p in paths if "roster" not in p.name.lower()]  # type: ignore[attr-defined]
+
+    # 3. Full site code as a prefix: unambiguous per site and tolerant of any date
+    #    format (2016 same-region sites share US_<region>, so only the full code
+    #    disambiguates US_BRW_101 from US_BRW_201).
+    site_code = site["site_code"]
+    if site_code:
+        cands = _nonroster(data_dir.glob(f"{site_code}*.csv"))
+        if len(cands) == 1:
+            return cands[0]
+    # 4. Region prefix + acquisition date: recovers a roster/disk site-number
+    #    mismatch (2023: roster US_CPT_101 while the disk file is US_CPT_001).
+    m = _FILENAME_DATE_RE.search(fname)
     date_tok = f"{m.group(1)}_{m.group(2)}_{m.group(3)}" if m else None
-    parts = site["site_code"].split("_")
-    prefix = "_".join(parts[:2]) if len(parts) >= 2 else site["site_code"]
-    if not prefix:
+    parts = site_code.split("_")
+    region = "_".join(parts[:2]) if len(parts) >= 2 else site_code
+    if not region:
         return None
     cands = [
         p
-        for p in data_dir.glob("*.csv")
-        if "roster" not in p.name.lower()
-        and p.name.startswith(prefix)
-        and (date_tok is None or date_tok in p.name)
+        for p in _nonroster(data_dir.glob("*.csv"))
+        if p.name.startswith(region) and (date_tok is None or date_tok in p.name)
     ]
     return cands[0] if len(cands) == 1 else None
 
@@ -274,7 +294,10 @@ def _read_roster(roster_path: Path) -> list[dict[str, str]]:
     k_lat = _key_for(fns, "latitude")
     k_lon = _key_for(fns, "longitude")
     k_date = _key_for(fns, "observationdate", "date")
-    k_site = _key_for(fns, "sitecode")
+    # Prefer an exact SiteCode / SiteCode_New (2018+ / 2016 rosters) before the
+    # substring fallback, which would otherwise grab SiteCodeHistorical (BL1) and
+    # break borehole-file linkage (2016 maps zero sites -> zero obs).
+    k_site = _key_for(fns, "sitecode", "sitecode_new")
     k_gtnp = _key_for(fns, "gtnp_id", "gtnpid")
     k_name = _key_for(fns, "sitename")
     out: list[dict[str, str]] = []

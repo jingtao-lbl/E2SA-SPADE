@@ -2,6 +2,10 @@
 
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
+![E2SA-SPADE structure](docs/figures/e2sa-spade.png)
+
+SPADE is the first project built on **E2SA** (End-to-End Science Agent), a framework for broad Earth science that takes a scientific question through literature retrieval, data discovery and assembly, harmonization, quality control, modeling, evaluation, and reporting via an orchestrator and specialist sub-agents. E2SA is under active development in a private repository, with a public release planned for Fall 2026. This SPADE mirror ships the SPADE-relevant slice of the framework in the meantime.
+
 ## Science context
 
 **SPADE is the Subsurface Permafrost Autonomous Discovery Engine**, an agentic data-preparation and model-simulation-setup agent for coupled surface-subsurface Earth system workflows. It assembles permafrost observations and forcing datasets from sparse, heterogeneous sources, harmonizes them into a unified schema with provenance tracking, and prepares analysis-ready inputs for downstream modeling and machine-learning pipelines.
@@ -183,7 +187,7 @@ SPADE runs on the E2SA framework's agent pipeline: an orchestrator that sequence
 - **Literature review** - search, screen, and verify the relevant literature and dataset references.
 - **Data assembly** - discover, retrieve, organize, harmonize, and quality-control the relevant datasets, then prepare and write them into the analysis-ready format a model consumes, all provenance-tracked.
 - **ML model development** - develop a machine-learning model from the assembled data (a deterministic baseline, then a physics-constrained generative model with ensemble uncertainty).
-- **Calibration** - calibrate process models (for example ELM-FATES) against the assembled observations, bridging to the A2MC multi-target calibration framework.
+- **Calibration** - calibrate machine-learning- and process-based models against the assembled observations, bridging to the [A2MC](https://github.com/jingtao-lbl/A2MC-elm) multi-target calibration framework (see [Related work](#related-work)).
 - **Validation** - independently validate the model against held-out data and existing products, and assess uncertainty quality.
 - **Model evolution** - when calibration and validation reveal a structural deficiency, propose a model-code improvement as a verified, human-reviewed pull request.
 - **Report** - generate figures, maps, tables, and a draft findings memo.
@@ -226,11 +230,9 @@ Contributions are welcome. Please open an issue to discuss substantial changes b
 
 For bug reports or data-source requests, open an issue at https://github.com/jingtao-lbl/E2SA-SPADE/issues.
 
-## Acknowledgments
+## Related work
 
-SPADE is developed at Lawrence Berkeley National Laboratory. It builds on the parent E2SA (End-to-End Science Agent) framework and on the earlier A2MC (Agentic Adaptive Multi-target Calibration) work at https://github.com/jingtao-lbl/A2MC-elm.
-
-Upstream data sources are credited in the per-source cards under `projects/spade/data/sources/`.
+- **A2MC (Agentic Adaptive Multi-target Calibration)** (https://github.com/jingtao-lbl/A2MC-elm). An agentic framework for adaptive, multi-target calibration of process models such as ELM and ELM-FATES. SPADE's calibration agent bridges to A2MC rather than reimplementing calibration. A2MC ships with an adapter-kit that couples the calibration engine to other models, both machine-learning-based and process-based, so the same multi-target calibration loop transfers across modeling systems.
 
 ## Funding
 

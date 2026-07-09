@@ -31,7 +31,7 @@ Scaffolds a new skill AND registers it, because the two-step "create the `SKILL.
 - **Register or it drifts:** never finish without the `AGENTS.md` catalog row. `tools/check_skill_registry.py` (step 5) is the enforceable backstop — wire it into CI / pre-commit so the invariant holds even when this skill isn't used.
 - **Distinct names:** check existing skill names before adding (step 1); a near-duplicate name (shared prefix + verb) makes the harness and humans pick the wrong skill. Disambiguate by renaming and/or `NOT for …` boundary lines in both descriptions.
 - **Minimal procedure:** a skill encodes the easy-to-get-wrong conventions, not an essay. If it is one obvious step, it may not need to be a skill.
-- **Framework skills stay domain-agnostic** (no project sites/paths baked in); project-specific logic lives under `projects/<project>/`.
+- **Framework skills stay project-agnostic** (no project sites/paths baked in); project-specific logic lives under `projects/<project>/`.
 - **Mark non-user-invocable / auto-fire skills** explicitly in the description (like `e2sa-lessons-capture`).
 - Human-gated: propose + review before commit.
 

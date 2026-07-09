@@ -32,7 +32,7 @@ The "distill → propose → gate → apply" half of skill evolution. The captur
 - **Surgical edits only** — add or fix a step; do not bloat the skill or rewrite wholesale. A skill that keeps growing is a smell; consider splitting or pruning instead.
 - **`description` (trigger) edits are the highest risk** — they change *when* the skill fires. Flag any trigger change prominently for the human.
 - **Evidence-cited** — every proposed change names the lesson/feedback/outcome that justifies it. No speculative edits.
-- Keep framework skills domain-agnostic.
+- Keep framework skills project-agnostic.
 
 ## Changelog
 

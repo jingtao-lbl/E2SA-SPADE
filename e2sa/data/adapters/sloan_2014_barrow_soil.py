@@ -210,6 +210,8 @@ def _parse_sloan_perplot_files(
                 temp_raw = (row.get("Temp, deg C") or "").strip()
                 if not time_raw or not temp_raw:
                     continue
+                if temp_raw == SLOAN_SENTINEL:  # HOBO logger error rows carry -9999
+                    continue
                 try:
                     temp = float(temp_raw)
                 except ValueError:

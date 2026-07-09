@@ -134,6 +134,19 @@ class TestParseSloan:
         assert all(o.value != -9999 for o in obs)
         assert {o.extra["plot_id"] for o in obs} == {"A1C", "A1E"}
 
+    def test_perplot_sentinel_filtered_and_qc_clean(self) -> None:
+        # Regression: the per-plot HOBO files carry -9999 error rows (real data:
+        # plotB2T_25cm has 6). The per-plot parser must drop them like the 30-min
+        # parser does, so no out-of-range soil_temperature leaks into the catalog.
+        from e2sa.qc.checks import validate_observations
+
+        obs = _adapter().parse_to_schema(_sloan_fixture_fetch_result())
+        perplot = [o for o in obs if "perplot" in o.obs_id]
+        assert all(o.value != -9999 for o in perplot)
+        findings = validate_observations(Sloan2014BarrowSoilAdapter.serves, obs)
+        errors = [f for f in findings if f.severity == "error"]
+        assert errors == [], f"expected no QC errors, got {errors}"
+
     def test_provenance_and_schema_fields(self) -> None:
         obs = _adapter().parse_to_schema(_sloan_fixture_fetch_result())
         for o in obs:
