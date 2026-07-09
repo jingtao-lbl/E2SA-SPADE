@@ -186,10 +186,11 @@ SPADE runs on the E2SA framework's agent pipeline: an orchestrator that sequence
 
 - **Literature review** - search, screen, and verify the relevant literature and dataset references.
 - **Data assembly** - discover, retrieve, organize, harmonize, and quality-control the relevant datasets, then prepare and write them into the analysis-ready format a model consumes, all provenance-tracked.
-- **ML model development** - develop a machine-learning model from the assembled data (a deterministic baseline, then a physics-constrained generative model with ensemble uncertainty).
+- **Modeling** - includes **ML model development** and **model evolution**.
+    - **ML model development** - develop a machine-learning model from the assembled data (a deterministic baseline, then a physics-constrained generative model with ensemble uncertainty).
+    - **Model evolution** - when calibration and validation reveal a structural deficiency, propose a model-code improvement as a verified, human-reviewed pull request. This component was born from A2MC model-improvement tasks.
 - **Calibration** - calibrate machine-learning- and process-based models against the assembled observations, bridging to the [A2MC](https://github.com/jingtao-lbl/A2MC-elm) multi-target calibration framework (see [Related work](#related-work)).
 - **Validation** - independently validate the model against held-out data and existing products, and assess uncertainty quality.
-- **Model evolution** - when calibration and validation reveal a structural deficiency, propose a model-code improvement as a verified, human-reviewed pull request.
 - **Report** - generate figures, maps, tables, and a draft findings memo.
 
 The literature-review agent and the **data-assembly agent** are implemented today: the connectors, adapters, catalog, and self-describing staging described above, plus `discover()` (capability-index source matching) and `assemble()` (unit harmonization, cross-source QC, and analysis-ready CSV/Parquet output). The grid-harmonization step (`post_process()`: spatial regrid and temporal alignment onto a common grid) and the downstream agents (ML model development, calibration, validation, model evolution, and report) define the rest of the pipeline SPADE is built to run end to end.
